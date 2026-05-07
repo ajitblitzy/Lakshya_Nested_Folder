@@ -75,8 +75,10 @@ dedicated guide follow the general bundled-deps policy.
 
 * **Purpose**: JavaScript engine, ECMAScript runtime
 * **Source**: `deps/v8/`
-* **Toggles**: `node_use_v8_platform`, `node_use_bundled_v8`, `node_shared_v8`; embedder string
-  `v8_embedder_string: '-node.17'` (declared in `common.gypi`)
+* **Toggles**: `node_use_v8_platform`, `node_use_bundled_v8` (both default to `true`); embedder
+  string `v8_embedder_string: '-node.17'` (declared in `common.gypi`). Node.js v26 only supports
+  the bundled V8 — `configure.py` does not expose a `--shared-v8` option because V8 is too tightly
+  coupled to the embedder API to be safely shared.
 * **Updater**: `tools/dep_updaters/update-v8-patch.sh`
 * **Maintainer guide**:
   [`../contributing/maintaining/maintaining-V8.md`](../contributing/maintaining/maintaining-V8.md)
@@ -339,7 +341,6 @@ The most relevant build flags from `common.gypi` and `node.gyp`:
 | `node_shared_openssl`      | `false`  | Link a system OpenSSL instead of the bundled copy                   |
 | `node_shared_libuv`        | `false`  | Link a system libuv                                                 |
 | `node_shared_zlib`         | `false`  | Link a system zlib                                                  |
-| `node_shared_v8`           | `false`  | Link a system V8                                                    |
 | `node_shared_uvwasi`       | `false`  | Link a system uvwasi                                                |
 | `node_module_version`      | `''`     | Override the module ABI version at build time (see note below)      |
 
@@ -353,13 +354,17 @@ GYP variables is in `common.gypi` and `node.gyp`.
 
 ## Update automation and CI
 
-Three GitHub Actions workflows automate dependency updates:
+Several GitHub Actions workflows automate dependency and test-fixture updates:
 
 * `update-v8.yml` — invokes `tools/dep_updaters/update-v8-patch.sh` on a schedule, files a PR with
   the patched V8 tree
 * `update-openssl.yml` — invokes `tools/dep_updaters/update-openssl.sh`, files a PR
-* `update-wpt.yml` — invokes `tools/dep_updaters/update-test426-fixtures.sh` and refreshes the WPT
-  vendoring under `test/wpt/`
+* `update-wpt.yml` — invokes `git node wpt "$SUBSYSTEM"` via `@node-core/utils` (`ncu`) to refresh
+  the Web Platform Tests vendoring under `test/wpt/` for the configured subsystems (default
+  matrix: `url`, `urlpattern`, `WebCryptoAPI`); it does not invoke a `tools/dep_updaters/` script.
+* `tools.yml` — invokes `tools/dep_updaters/update-test426-fixtures.sh` to refresh the TC39
+  source-map test fixtures under `test/fixtures/test426/` (this script is unrelated to WPT despite
+  superficially similar naming).
 
 Other deps are bumped manually using their respective `tools/dep_updaters/update-*.sh` scripts and
 reviewed in regular PRs.

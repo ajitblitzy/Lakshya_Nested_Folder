@@ -34,8 +34,9 @@ V8 is exposed to user code through three channels:
   [`../api/addons.md`](../api/addons.md), [`../api/n-api.md`](../api/n-api.md)
 
 For build-time toggles that affect V8 (`node_use_v8_platform`, `node_use_bundled_v8`,
-`node_shared_v8`, `node_use_node_snapshot`, `node_use_node_code_cache`), see
-[Dependencies](dependencies.md).
+`node_use_node_snapshot`, `node_use_node_code_cache`), see
+[Dependencies](dependencies.md). Node.js v26 only supports the bundled V8; there is no
+`--shared-v8` option in `configure.py`.
 
 ## libuv event loop
 

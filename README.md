@@ -50,7 +50,7 @@ testing activities.
     ├── CONTRIBUTING.md      — contribution guide
     ├── LICENSE              — MIT license
     ├── lib/                 — public JavaScript API (54 modules)
-    ├── src/                 — native C++ runtime (453 files)
+    ├── src/                 — native C++ runtime (453 files; 433 C++ + 20 build/protocol/resource files)
     ├── test/                — test suite (11,060 entries; ~10,317 files)
     ├── tools/               — build/lint/release tooling
     ├── benchmark/           — performance benchmarks (591 entries; ~525 files)

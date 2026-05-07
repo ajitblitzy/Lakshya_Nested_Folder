@@ -113,8 +113,10 @@ toggles in `common.gypi` and `node.gypi`. Notable toggles include:
 * `--prefix=<path>` — installation prefix
 * `--debug` — build a debug variant alongside the release
 * `--shared` — build the runtime as a shared library
-* `--shared-openssl`, `--shared-libuv`, `--shared-zlib`, `--shared-v8` — link a system copy of the
-  dependency instead of the bundled one
+* `--shared-openssl`, `--shared-libuv`, `--shared-zlib` — link a system copy of the dependency
+  instead of the bundled one (see `configure.py` for the complete `--shared-*` matrix); V8 is
+  always the bundled copy because of the `-node.17` embedder patch stack, so `configure.py` does
+  not expose a `--shared-v8` option
 * `--without-intl`, `--with-intl=full-icu` — disable or enable full ICU
 * `--openssl-no-asm` — disable OpenSSL hand-written assembly (for unsupported toolchains)
 * `--enable-asan` — compile with AddressSanitizer instrumentation

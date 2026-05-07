@@ -195,6 +195,7 @@ Notes:
 * Architectural overview: [Architecture overview](overview.md)
 * Feature catalog: [Feature catalog](features.md)
 * Integration narrative: [Integration](integration.md)
+* Dependency integration (libuv backs all three concurrency primitives): [Dependencies](dependencies.md)
 * JavaScript runtime (V8 isolates, event loop): [JavaScript runtime](runtime.md)
 * Permission Model (`--allow-child-process`, `--allow-worker`): [Permission model](permission-model.md)
 * Public APIs:

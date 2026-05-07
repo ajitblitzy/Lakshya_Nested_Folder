@@ -26,7 +26,7 @@ flowchart TB
     UserSpace["User space<br/><i>application code, third-party packages</i>"]
     PublicAPI["Public API <code>lib/*.js</code><br/>54 modules<br/><i>node:http, node:fs, node:crypto, ...</i>"]
     Internal["Internal modules<br/><code>lib/internal/**</code><br/><i>implementation, primordials, hooks</i>"]
-    Native["Native runtime<br/><code>src/*.cc</code><br/>453 files<br/><i>bindings, embedder API, permissions</i>"]
+    Native["Native runtime<br/><code>src/</code><br/>453 files (433 C++)<br/><i>bindings, embedder, permissions</i>"]
     Deps["Bundled deps <code>deps/</code><br/><i>V8, libuv, OpenSSL, nghttp2,<br/>c-ares, undici, ICU, SQLite, ...</i>"]
 
     UserSpace -->|imports node:* modules| PublicAPI
@@ -89,7 +89,10 @@ to user code; their semantics may change without notice.
 
 ### Layer 4 — Native runtime (`src/`)
 
-The 453 C++ source files under `src/` implement the bindings between JavaScript and the bundled
+The `src/` tree contains 453 files in total, of which 433 are C++ source files (200 `.cc` and
+233 `.h`); the remainder are bootstrap configuration (`.gn`, `.gni`, `.gypi`, `.json`), inspector
+protocol descriptions (`.pdl`), `.clang-tidy`, READMEs, and Windows resources (`.rc`, `.ico`,
+`.manifest`, `.S`). Together they implement the bindings between JavaScript and the bundled
 C/C++ dependencies. Notable subdirectories:
 
 | Subdirectory       | File count | Subject                                                                            |
@@ -136,8 +139,11 @@ consumer. Cross-layer leakage is forbidden by the
 
 The default build statically links V8, libuv, OpenSSL, nghttp2, c-ares, undici, ICU, SQLite, Amaro,
 simdutf, zlib, brotli, zstd, ngtcp2, and nghttp3 into a single `node` binary. Shared-library
-variants are available via `--shared`, `--shared-openssl`, `--shared-libuv`, `--shared-zlib`, and
-`--shared-v8`.
+variants for many of those dependencies are available via `--shared`, `--shared-openssl`,
+`--shared-libuv`, `--shared-zlib`, and the other `--shared-*` flags accepted by `configure.py`. V8
+itself is an exception: the embedder string `-node.17` declared in `common.gypi` indicates that
+Node.js carries a stack of V8 patches and embedder-API modifications, so V8 must be the bundled
+copy and `configure.py` does not expose a `--shared-v8` option.
 
 ### Cross-platform abstraction
 

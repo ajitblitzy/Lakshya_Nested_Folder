@@ -57,7 +57,7 @@ sequenceDiagram
     participant Handler as User handler<br/>(request listener)
 
     Client->>TCP: TCP SYN (or QUIC Initial over UDP)
-    TCP->>TLS: Accept; optional TLS handshake
+    TCP->>TLS: Accept, optional TLS handshake
     TLS->>Proto: ALPN selection (h2, http/1.1, h3)
     alt Protocol is HTTP/1.1
         Proto->>H1: Forward bytes
