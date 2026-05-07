@@ -305,7 +305,8 @@ dedicated guide follow the general bundled-deps policy.
 ### lief
 
 * **Purpose**: Binary post-processing toolchain used by SEA
-* **Source**: `tools/lief/`
+* **Source**: `tools/prepare_lief.py` (Python helper that fetches and stages the LIEF library at
+  build time)
 * **Toggles**: n/a (build-time)
 * **Updater**: `tools/dep_updaters/update-lief.sh`
 * **Maintainer guide**: general bundled-deps policy
