@@ -148,16 +148,19 @@ managed runtimes, plugin hosts). The embedder API is declared in `src/node.h` an
 
 ### `src/api/` layout
 
-| File                        | Subject                                                                                                                      |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `src/api/environment.cc`    | Per-process and per-instance lifecycle (`InitializeNodeWithArgs`, `CreateEnvironment`, `LoadEnvironment`, `FreeEnvironment`) |
-| `src/api/embed_helpers.cc`  | Helpers used by `embedtest` and other embedding samples                                                                      |
-| `src/api/callback.cc`       | Calling JavaScript functions from C++ with proper error handling                                                             |
-| `src/api/async_resource.cc` | The `node::AsyncResource` C++ helper for embedders that schedule async work                                                  |
-| `src/api/encoding.cc`       | UTF-8 / Latin-1 / UCS-2 conversion helpers                                                                                   |
-| `src/api/exceptions.cc`     | Translating system errors into JavaScript `Error` objects                                                                    |
-| `src/api/hooks.cc`          | `BeforeExit` / `Exit` / `AtExit` hook registration                                                                           |
-| `src/api/utils.cc`          | Miscellaneous embedder utilities                                                                                             |
+| File                        | Subject                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
+| `src/api/environment.cc`    | Per-process and per-instance lifecycle (see note below)            |
+| `src/api/embed_helpers.cc`  | Helpers used by `embedtest` and other embedding samples            |
+| `src/api/callback.cc`       | Calling JavaScript functions from C++ with proper error handling   |
+| `src/api/async_resource.cc` | The `node::AsyncResource` helper for embedders scheduling async work |
+| `src/api/encoding.cc`       | UTF-8 / Latin-1 / UCS-2 conversion helpers                         |
+| `src/api/exceptions.cc`     | Translating system errors into JavaScript `Error` objects          |
+| `src/api/hooks.cc`          | `BeforeExit` / `Exit` / `AtExit` hook registration                 |
+| `src/api/utils.cc`          | Miscellaneous embedder utilities                                   |
+
+The `src/api/environment.cc` file implements the core lifecycle entry points:
+`InitializeNodeWithArgs`, `CreateEnvironment`, `LoadEnvironment`, and `FreeEnvironment`.
 
 ### ABI compatibility
 
@@ -182,7 +185,8 @@ into six categories: testing (`test-linux.yml`, `test-macos.yml`, `test-shared.y
 `daily-wpt-fyi.yml`, `timezone-update.yml`, `tools.yml`, `commit-queue.yml`, `auto-start-ci.yml`,
 plus stale-issue / inactive-collaborator workflows).
 
-The workflows are catalogued in [`../contributing/testing-overview.md`](../contributing/testing-overview.md).
+The workflows are cataloged in
+[`../contributing/testing-overview.md`](../contributing/testing-overview.md).
 
 ### Codecov
 
@@ -215,12 +219,24 @@ release process for collaborators is in
 
 ## Stability summary
 
-| Surface                                 | ABI stability                                                           | Notes                                                                                                            |
-| --------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Public API (`lib/*.js`)                 | Semver-stable per the [Stability index policy](../api/documentation.md) | Stability levels are per-API, declared in [`../api/`](../api/) reference pages                                   |
-| Internal API (`lib/internal/`)          | Unstable                                                                | Off-limits to user code; semantics may change in any release per [Internal API](../contributing/internal-api.md) |
-| Node-API (`napi_*`)                     | ABI-stable across major versions                                        | Range `[1, 10]`; an addon built for version N runs on this runtime if `N` falls in the supported range           |
-| Embedder API (`src/api/`, `src/node.h`) | Major-version-stable only                                               | Embedders rebuild against each new major release; `NODE_MODULE_VERSION 144`                                      |
+| Surface                                 | ABI stability                            |
+| --------------------------------------- | ---------------------------------------- |
+| Public API (`lib/*.js`)                 | Semver-stable; see Stability index below |
+| Internal API (`lib/internal/`)          | Unstable; off-limits to user code        |
+| Node-API (`napi_*`)                     | ABI-stable across major versions         |
+| Embedder API (`src/api/`, `src/node.h`) | Major-version-stable only                |
+
+Notes for each surface:
+
+* **Public API (`lib/*.js`)** — Semver-stable per the
+  [Stability index policy](../api/documentation.md). Stability levels are declared per-API in the
+  reference pages under [`../api/`](../api/).
+* **Internal API (`lib/internal/`)** — Off-limits to user code; semantics may change in any
+  release per the [Internal API guide](../contributing/internal-api.md).
+* **Node-API (`napi_*`)** — Supported version range `[1, 10]`; an addon built for version N runs
+  on this runtime if `N` falls in the supported range.
+* **Embedder API (`src/api/`, `src/node.h`)** — Embedders must rebuild against each new major
+  release; `NODE_MODULE_VERSION 144` for v26.
 
 ## Cross-references
 

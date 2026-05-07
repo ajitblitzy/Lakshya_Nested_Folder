@@ -25,26 +25,45 @@ The bundled OpenSSL lives at `deps/openssl/`. To link a system OpenSSL instead, 
 configurations are covered in [`../../BUILDING.md`](../../BUILDING.md).
 
 The native bindings between JavaScript and OpenSSL are in `src/crypto/` (62 files). Their structural
-breakdown:
+breakdown is grouped below by algorithm family:
 
-| Subject | Source |
-| --- | --- |
-| Symmetric ciphers (AES, ChaCha20-Poly1305) | `src/crypto/crypto_aes.cc`, `src/crypto/crypto_aes.h`, `src/crypto/crypto_chacha20_poly1305.cc`, `src/crypto/crypto_cipher.cc` |
-| Hashing (SHA family, BLAKE2) | `src/crypto/crypto_hash.cc`, `src/crypto/crypto_hash.h` |
-| Key derivation (PBKDF2, scrypt, HKDF, argon2) | `src/crypto/crypto_pbkdf2.cc`, `src/crypto/crypto_scrypt.cc`, `src/crypto/crypto_hkdf.cc`, `src/crypto/crypto_argon2.cc` |
-| Asymmetric (RSA, EC, DH, EdDSA, ML-KEM/Kyber) | `src/crypto/crypto_rsa.cc`, `src/crypto/crypto_ec.cc`, `src/crypto/crypto_dh.cc`, `src/crypto/crypto_cfrg.cc` |
-| Random (CSPRNG, prime gen, primitives) | `src/crypto/crypto_random.cc`, `src/crypto/crypto_random.h` |
-| TLS context, X.509, CSR | `src/crypto/crypto_tls.cc`, `src/crypto/crypto_x509.cc` |
-| Top-level glue and binding | `src/crypto/crypto_util.cc`, `src/crypto/crypto_common.cc`, `src/crypto/crypto_keys.cc`, `src/crypto/crypto_keygen.cc` |
+| Subject                         | Source                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------- |
+| Symmetric ciphers (AES)         | `src/crypto/crypto_aes.cc`, `src/crypto/crypto_aes.h`                           |
+| Symmetric ciphers (ChaCha20)    | `src/crypto/crypto_chacha20_poly1305.cc`, `src/crypto/crypto_chacha20_poly1305.h` |
+| Symmetric cipher streams        | `src/crypto/crypto_cipher.cc`, `src/crypto/crypto_cipher.h`                     |
+| Hashing (SHA family, BLAKE2)    | `src/crypto/crypto_hash.cc`, `src/crypto/crypto_hash.h`                         |
+| Key derivation (PBKDF2)         | `src/crypto/crypto_pbkdf2.cc`, `src/crypto/crypto_pbkdf2.h`                     |
+| Key derivation (scrypt)         | `src/crypto/crypto_scrypt.cc`, `src/crypto/crypto_scrypt.h`                     |
+| Key derivation (HKDF)           | `src/crypto/crypto_hkdf.cc`, `src/crypto/crypto_hkdf.h`                         |
+| Key derivation (argon2)         | `src/crypto/crypto_argon2.cc`, `src/crypto/crypto_argon2.h`                     |
+| Asymmetric (RSA)                | `src/crypto/crypto_rsa.cc`, `src/crypto/crypto_rsa.h`                           |
+| Asymmetric (DSA)                | `src/crypto/crypto_dsa.cc`, `src/crypto/crypto_dsa.h`                           |
+| Asymmetric (Diffie-Hellman)     | `src/crypto/crypto_dh.cc`, `src/crypto/crypto_dh.h`                             |
+| Asymmetric (EC and CFRG curves) | `src/crypto/crypto_ec.cc`, `src/crypto/crypto_ec.h`                             |
+| Post-quantum (ML-KEM / Kyber)   | `src/crypto/crypto_kem.cc`, `src/crypto/crypto_kem.h`                           |
+| Post-quantum (ML-DSA)           | `src/crypto/crypto_ml_dsa.cc`, `src/crypto/crypto_ml_dsa.h`                     |
+| Signatures (signing/verifying)  | `src/crypto/crypto_sig.cc`, `src/crypto/crypto_sig.h`                           |
+| Random (CSPRNG, prime gen)      | `src/crypto/crypto_random.cc`, `src/crypto/crypto_random.h`                     |
+| TLS context                     | `src/crypto/crypto_tls.cc`, `src/crypto/crypto_tls.h`                           |
+| X.509 certificates              | `src/crypto/crypto_x509.cc`, `src/crypto/crypto_x509.h`                         |
+| Certificate signing requests    | `src/crypto/crypto_spkac.cc`, `src/crypto/crypto_spkac.h`                       |
+| Top-level glue and binding      | `src/crypto/crypto_util.cc`, `src/crypto/crypto_common.cc`                      |
+| Key handling and generation     | `src/crypto/crypto_keys.cc`, `src/crypto/crypto_keygen.cc`                      |
+
+The CFRG family (Ed25519, Ed448, X25519, X448) is implemented in JavaScript at
+`lib/internal/crypto/cfrg.js`; in C++ those curves are handled inside `src/crypto/crypto_ec.cc`
+(key material) and `src/crypto/crypto_sig.cc` (signing/verifying), since OpenSSL treats them as
+elliptic-curve algorithms.
 
 ## Two API surfaces
 
 Node.js exposes cryptography through two parallel APIs that share the OpenSSL backend:
 
-| API | Reference | Style |
-| --- | --- | --- |
-| **Node.js `crypto` (traditional)** | [`../api/crypto.md`](../api/crypto.md) | Synchronous and stream-based; richer feature set; Node.js-native idioms |
-| **Web Crypto (`crypto.subtle`)** | [`../api/webcrypto.md`](../api/webcrypto.md) | Fully Promise-based; W3C Web Cryptography API standard; cross-browser portable |
+| API                                | Reference                          | Style                              |
+| ---------------------------------- | ---------------------------------- | ---------------------------------- |
+| **Node.js `crypto` (traditional)** | [`crypto.md`](../api/crypto.md)    | Sync, stream-based, Node-native    |
+| **Web Crypto (`crypto.subtle`)**   | [`webcrypto.md`](../api/webcrypto.md) | Promise-based, W3C, cross-browser  |
 
 Both surfaces are exposed through the same OpenSSL bindings; they differ in object model, error
 shape, and availability. Web Crypto is part of the Web Standards alignment effort documented in
@@ -136,6 +155,7 @@ For an integrated view of all bundled dependencies, see [Dependencies](dependenc
   * [`../api/webcrypto.md`](../api/webcrypto.md)
   * [`../api/tls.md`](../api/tls.md)
   * [`../api/https.md`](../api/https.md)
-* OpenSSL maintainer guide: [`../contributing/maintaining/maintaining-openssl.md`](../contributing/maintaining/maintaining-openssl.md)
+* OpenSSL maintainer guide:
+  [`../contributing/maintaining/maintaining-openssl.md`](../contributing/maintaining/maintaining-openssl.md)
 * Build and platform requirements (FIPS recipe): [`../../BUILDING.md`](../../BUILDING.md)
 * Project security policy: [`../../SECURITY.md`](../../SECURITY.md)

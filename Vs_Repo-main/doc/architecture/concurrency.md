@@ -12,11 +12,21 @@ For permission enforcement, see [Permission model](permission-model.md).
 
 ## Three concurrency models
 
-| Model | Public module | Isolation | Communication |
-| --- | --- | --- | --- |
-| **Worker threads** | [`node:worker_threads`](../api/worker_threads.md) (`lib/worker_threads.js`) | Separate V8 isolate, separate libuv loop, same OS process | `MessagePort`, `BroadcastChannel`, `SharedArrayBuffer`, `Atomics`, structured-clone messaging |
-| **Child processes** | [`node:child_process`](../api/child_process.md) (`lib/child_process.js`) | Separate OS process | stdin/stdout/stderr pipes, optional IPC channel for `child_process.fork()` |
-| **Cluster** | [`node:cluster`](../api/cluster.md) (`lib/cluster.js`) | Separate OS processes (built on `child_process.fork()`) | Round-robin or OS-default port distribution; IPC channel between primary and workers |
+| Model               | Public module                                                  | Isolation                  |
+| ------------------- | -------------------------------------------------------------- | -------------------------- |
+| **Worker threads**  | [`node:worker_threads`](../api/worker_threads.md)              | Separate V8 isolate        |
+| **Child processes** | [`node:child_process`](../api/child_process.md)                | Separate OS process        |
+| **Cluster**         | [`node:cluster`](../api/cluster.md)                            | Multiple OS processes      |
+
+Source modules and communication primitives:
+
+* **Worker threads** (`lib/worker_threads.js`) — Separate V8 isolate and libuv loop, same OS
+  process; communicate through `MessagePort`, `BroadcastChannel`, `SharedArrayBuffer`, `Atomics`,
+  and structured-clone messaging.
+* **Child processes** (`lib/child_process.js`) — Separate OS process; communicate through
+  stdin/stdout/stderr pipes plus an optional IPC channel for `child_process.fork()`.
+* **Cluster** (`lib/cluster.js`) — Built on `child_process.fork()`; uses round-robin or
+  OS-default port distribution and an IPC channel between primary and worker processes.
 
 ## Worker threads
 
@@ -165,12 +175,20 @@ documented in [Permission model](permission-model.md).
 
 ## Choosing the right model
 
-| Workload | Recommended model |
-| --- | --- |
-| CPU-bound JavaScript work that can be partitioned | Worker threads (cheaper than processes; share heap-free memory via `SharedArrayBuffer`) |
+| Workload                                              | Recommended model                            |
+| ----------------------------------------------------- | -------------------------------------------- |
+| CPU-bound JavaScript work that can be partitioned     | Worker threads (see note below)              |
 | External CLI tooling, polyglot work, language interop | Child processes (`spawn`, `exec`, `execFile`) |
-| Multi-core HTTP server scale-out | Cluster (round-robin) |
-| Sandboxing untrusted user code | Cluster + Permission Model (worker threads share the parent's address space and memory) |
+| Multi-core HTTP server scale-out                      | Cluster (round-robin)                        |
+| Sandboxing untrusted user code                        | Cluster + Permission Model (see note below)  |
+
+Notes:
+
+* Worker threads are cheaper than separate processes and can share heap-free memory via
+  `SharedArrayBuffer` and `Atomics`.
+* For sandboxing untrusted code, prefer cluster (separate OS processes) plus the Permission Model;
+  worker threads share the parent's address space and memory and are therefore not suitable for
+  isolating untrusted code.
 
 ## Cross-references
 

@@ -17,11 +17,17 @@ details (libuv), see [Dependencies](dependencies.md). For permission enforcement
 public face; `lib/internal/fs/` hosts the implementation, including the promise-based variant under
 `lib/internal/fs/promises.js`.
 
-| Style | Import | Example operation |
-| --- | --- | --- |
-| **Callback** | `import fs from 'node:fs'` | `fs.readFile('a.txt', cb)` — non-blocking; result delivered to `cb(err, data)` |
-| **Synchronous** | `import fs from 'node:fs'` | `fs.readFileSync('a.txt')` — blocks the event loop; returns the result directly |
-| **Promises** | `import fs from 'node:fs/promises'` | `await fs.readFile('a.txt')` — non-blocking; returns a `Promise` |
+| Style           | Import                                | Example operation                       |
+| --------------- | ------------------------------------- | --------------------------------------- |
+| **Callback**    | `import fs from 'node:fs'`            | `fs.readFile('a.txt', cb)` (see below)  |
+| **Synchronous** | `import fs from 'node:fs'`            | `fs.readFileSync('a.txt')` (see below)  |
+| **Promises**    | `import fs from 'node:fs/promises'`   | `await fs.readFile('a.txt')` (see below) |
+
+Behavior of each style:
+
+* **Callback** — non-blocking; the result is delivered to `cb(err, data)`.
+* **Synchronous** — blocks the event loop; the result is returned directly.
+* **Promises** — non-blocking; returns a `Promise`.
 
 A typical pairing across all three styles:
 
@@ -64,13 +70,18 @@ The complete API surface is at [`../api/fs.md`](../api/fs.md).
 All non-blocking and synchronous file-system operations route through libuv, which abstracts the
 platform-specific syscalls:
 
-| Operation | Linux | macOS | Windows |
-| --- | --- | --- | --- |
-| File open / read / write | `open(2)`, `pread(2)`, `pwrite(2)` | `open(2)`, `pread(2)`, `pwrite(2)` | `CreateFileW`, `ReadFile`, `WriteFile` |
-| Directory listing | `getdents64(2)` | `readdir(3)` | `FindFirstFileW`, `FindNextFileW` |
-| Stat | `statx(2)` (when available), `fstat(2)` | `fstat(2)` | `GetFileInformationByHandleEx` |
-| Watcher (single file) | `inotify(7)` | FSEvents (`<CoreServices/CoreServices.h>`) | `ReadDirectoryChangesW` |
-| Watcher (recursive) | `inotify` (manual recursion) | FSEvents (recursive natively) | `ReadDirectoryChangesW` (recursive natively) |
+| Operation             | Linux                        | macOS             | Windows                          |
+| --------------------- | ---------------------------- | ----------------- | -------------------------------- |
+| Open / read / write   | `open(2)` / `pread(2)`       | `open(2)`         | `CreateFileW` / `ReadFile`       |
+| Directory listing     | `getdents64(2)`              | `readdir(3)`      | `FindFirstFileW` / `FindNextFileW` |
+| Stat                  | `statx(2)` / `fstat(2)`      | `fstat(2)`        | `GetFileInformationByHandleEx`   |
+| Watcher (single file) | `inotify(7)`                 | FSEvents          | `ReadDirectoryChangesW`          |
+| Watcher (recursive)   | `inotify` (manual recursion) | FSEvents (native) | `ReadDirectoryChangesW` (native) |
+
+On macOS the watcher uses the FSEvents framework
+(`<CoreServices/CoreServices.h>`); on Linux `statx(2)` is preferred when available, falling back
+to `fstat(2)` otherwise. Recursive watchers are native on macOS and Windows; on Linux libuv
+implements recursion manually on top of `inotify`.
 
 Asynchronous operations are dispatched to libuv's worker thread pool (default size 4, configurable
 via the `UV_THREADPOOL_SIZE` environment variable) so that the main event loop is never blocked.
@@ -79,12 +90,18 @@ via the `UV_THREADPOOL_SIZE` environment variable) so that the main event loop i
 
 Two watcher APIs are exposed:
 
-| API | Implementation | Use case |
-| --- | --- | --- |
-| `fs.watch(path, options, listener)` | `lib/internal/fs/watchers.js` (libuv `uv_fs_event_t`) | Watch a single file or a directory |
-| `fs.watchFile(path, options, listener)` | `lib/internal/fs/watchers.js` (polling via `fs.stat()`) | Polling-based fallback when native events are not available |
-| `fs.promises.watch(path, options)` | `lib/internal/fs/promises.js` | AsyncIterable variant for promise-style code |
-| `fs.watch(path, { recursive: true })` | `lib/internal/fs/recursive_watch.js` | Recursive directory watching |
+| API                                     | Implementation                       | Use case                            |
+| --------------------------------------- | ------------------------------------ | ----------------------------------- |
+| `fs.watch(path, options, listener)`     | `lib/internal/fs/watchers.js`        | Watch a single file or directory    |
+| `fs.watchFile(path, options, listener)` | `lib/internal/fs/watchers.js`        | Polling-based fallback (see notes)  |
+| `fs.promises.watch(path, options)`      | `lib/internal/fs/promises.js`        | AsyncIterable for promise-style     |
+| `fs.watch(path, { recursive: true })`   | `lib/internal/fs/recursive_watch.js` | Recursive directory watching        |
+
+Notes:
+
+* `fs.watch` is implemented through libuv's `uv_fs_event_t` and dispatches platform-native events.
+* `fs.watchFile` polls via `fs.stat()` and is the recommended fallback when native events are
+  unavailable or unreliable.
 
 The semantics differ subtly between platforms (e.g., the order of `'rename'` versus `'change'`
 events). The full behavior table is in [`../api/fs.md`](../api/fs.md).

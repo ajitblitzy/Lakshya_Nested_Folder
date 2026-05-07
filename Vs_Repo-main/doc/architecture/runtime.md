@@ -26,11 +26,12 @@ governed by [`../contributing/maintaining/maintaining-V8.md`](../contributing/ma
 
 V8 is exposed to user code through three channels:
 
-| Channel                                                           | Reference                                                                    |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `node:v8` module (heap stats, code cache, snapshots, performance) | [`../api/v8.md`](../api/v8.md)                                               |
-| Inspector protocol (Chrome DevTools)                              | [Diagnostics](diagnostics.md), [`../api/inspector.md`](../api/inspector.md)  |
-| Native addons (V8 directly via `<v8.h>` or via Node-API)          | [`../api/addons.md`](../api/addons.md), [`../api/n-api.md`](../api/n-api.md) |
+* **`node:v8` module** (heap stats, code cache, snapshots, performance):
+  [`../api/v8.md`](../api/v8.md)
+* **Inspector protocol** (Chrome DevTools):
+  [Diagnostics](diagnostics.md), [`../api/inspector.md`](../api/inspector.md)
+* **Native addons** (V8 directly via `<v8.h>` or via Node-API):
+  [`../api/addons.md`](../api/addons.md), [`../api/n-api.md`](../api/n-api.md)
 
 For build-time toggles that affect V8 (`node_use_v8_platform`, `node_use_bundled_v8`,
 `node_shared_v8`, `node_use_node_snapshot`, `node_use_node_code_cache`), see
@@ -86,21 +87,24 @@ by file extension and the closest `package.json` `"type"` field:
 
 Implementation surface:
 
-| Loader              | Public module                           | Internal implementation                                                |
-| ------------------- | --------------------------------------- | ---------------------------------------------------------------------- |
-| CJS                 | `lib/module.js` (the `node:module` API) | `lib/internal/modules/cjs/`                                            |
-| ESM                 | `lib/module.js` (shared API surface)    | `lib/internal/modules/esm/`                                            |
-| Bootstrap           | (none)                                  | `lib/internal/bootstrap/`, `lib/internal/modules/run_main.js`          |
-| Customization hooks | `node:module` `register()` API          | `lib/internal/modules/customization_hooks.js`                          |
-| Package.json reader | (none)                                  | `lib/internal/modules/package_json_reader.js`                          |
-| TypeScript          | (transparent)                           | `lib/internal/modules/typescript.js` (see [TypeScript](typescript.md)) |
-| Helpers             | (none)                                  | `lib/internal/modules/helpers.js`                                      |
+| Loader              | Public module                  | Internal implementation                              |
+| ------------------- | ------------------------------ | ---------------------------------------------------- |
+| CJS                 | `lib/module.js` (`node:module`)| `lib/internal/modules/cjs/`                          |
+| ESM                 | `lib/module.js` (shared API)   | `lib/internal/modules/esm/`                          |
+| Bootstrap           | (none)                         | `lib/internal/bootstrap/`, `.../modules/run_main.js` |
+| Customization hooks | `node:module` `register()` API | `lib/internal/modules/customization_hooks.js`        |
+| Package.json reader | (none)                         | `lib/internal/modules/package_json_reader.js`        |
+| TypeScript          | (transparent)                  | `lib/internal/modules/typescript.js`                 |
+| Helpers             | (none)                         | `lib/internal/modules/helpers.js`                    |
+
+For TypeScript handling, see the [TypeScript](typescript.md) deep-dive. The Bootstrap path also
+includes `lib/internal/modules/run_main.js` (abbreviated above as `.../modules/run_main.js`).
 
 ### Module loading flow
 
 ```mermaid
 flowchart TB
-    Start((User code:<br/>import / require)) --> Resolve[Resolve specifier:<br/>relative, absolute, or<br/>bare specifier]
+    Start((User code:<br/>import / require)) --> Resolve[Resolve specifier:<br/>relative, absolute, bare]
     Resolve --> Cache{In module cache?}
     Cache -- yes --> Cached[Return cached module]
     Cache -- no --> Type{File type?}

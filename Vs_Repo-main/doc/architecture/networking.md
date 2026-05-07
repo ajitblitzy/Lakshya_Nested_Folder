@@ -13,19 +13,34 @@ details (libuv, OpenSSL, nghttp2, c-ares, undici, ngtcp2, nghttp3, llhttp), see
 
 ## Protocol matrix
 
-| Protocol | Public module | Internal | Backing library |
-| --- | --- | --- | --- |
-| TCP | [`node:net`](../api/net.md) (`lib/net.js`) | (libuv binding) | libuv (`deps/uv/`) |
-| UDP | [`node:dgram`](../api/dgram.md) (`lib/dgram.js`) | (libuv binding) | libuv |
-| DNS | [`node:dns`](../api/dns.md) (`lib/dns.js`) | `lib/internal/dns/` | c-ares (`deps/cares/`), libuv |
-| TLS | [`node:tls`](../api/tls.md) (`lib/tls.js`) | `lib/internal/tls/`, `lib/_tls_common.js`, `lib/_tls_wrap.js` | OpenSSL (`deps/openssl/`) |
-| HTTP/1.1 (server) | [`node:http`](../api/http.md) (`lib/http.js`) | `lib/_http_server.js`, `lib/_http_incoming.js`, `lib/_http_outgoing.js`, `lib/_http_common.js` | llhttp (`deps/llhttp/`) |
-| HTTP/1.1 (client) | [`node:http`](../api/http.md) (`lib/http.js`) | `lib/_http_client.js`, `lib/_http_agent.js` | llhttp |
-| HTTPS | [`node:https`](../api/https.md) (`lib/https.js`) | (composes `node:http` + `node:tls`) | OpenSSL + llhttp |
-| HTTP/2 | [`node:http2`](../api/http2.md) (`lib/http2.js`) | `lib/internal/http2/` | nghttp2 (`deps/nghttp2/`) |
-| QUIC | [`node:quic`](../api/quic.md) (`lib/quic.js`) | `lib/internal/quic/`, `src/quic/` (33 files) | ngtcp2 (`deps/ngtcp2/`), nghttp3 (`deps/nghttp3/`) |
-| HTTP/3 | (via `node:quic`) | `lib/internal/quic/` | ngtcp2 + nghttp3 |
-| Fetch / global `fetch()` | (global) | (delegates to undici) | undici (`deps/undici/`) |
+| Protocol                 | Public module                        | Backing library              |
+| ------------------------ | ------------------------------------ | ---------------------------- |
+| TCP                      | [`node:net`](../api/net.md)          | libuv (`deps/uv/`)           |
+| UDP                      | [`node:dgram`](../api/dgram.md)      | libuv                        |
+| DNS                      | [`node:dns`](../api/dns.md)          | c-ares (`deps/cares/`), libuv |
+| TLS                      | [`node:tls`](../api/tls.md)          | OpenSSL (`deps/openssl/`)    |
+| HTTP/1.1 (server)        | [`node:http`](../api/http.md)        | llhttp (`deps/llhttp/`)      |
+| HTTP/1.1 (client)        | [`node:http`](../api/http.md)        | llhttp                       |
+| HTTPS                    | [`node:https`](../api/https.md)      | OpenSSL + llhttp             |
+| HTTP/2                   | [`node:http2`](../api/http2.md)      | nghttp2 (`deps/nghttp2/`)    |
+| QUIC                     | [`node:quic`](../api/quic.md)        | ngtcp2 + nghttp3             |
+| HTTP/3                   | (via `node:quic`)                    | ngtcp2 + nghttp3             |
+| Fetch / global `fetch()` | (global; delegates to undici)        | undici (`deps/undici/`)      |
+
+The internal implementation surface for each protocol:
+
+* **TCP** (`lib/net.js`) — pure libuv binding, no JS-level internals
+* **UDP** (`lib/dgram.js`) — pure libuv binding
+* **DNS** (`lib/dns.js`) — `lib/internal/dns/`
+* **TLS** (`lib/tls.js`) — `lib/internal/tls/`, `lib/_tls_common.js`, `lib/_tls_wrap.js`
+* **HTTP/1.1 server** (`lib/http.js`) — `lib/_http_server.js`, `lib/_http_incoming.js`,
+  `lib/_http_outgoing.js`, `lib/_http_common.js`
+* **HTTP/1.1 client** (`lib/http.js`) — `lib/_http_client.js`, `lib/_http_agent.js`
+* **HTTPS** (`lib/https.js`) — composes `node:http` + `node:tls`
+* **HTTP/2** (`lib/http2.js`) — `lib/internal/http2/`
+* **QUIC** (`lib/quic.js`) — `lib/internal/quic/`, `src/quic/` (33 files)
+* **HTTP/3** — `lib/internal/quic/`
+* **Fetch** — delegates to undici through globals
 
 ## Inbound request flow
 
@@ -142,7 +157,8 @@ are documented at [`../api/http.md`](../api/http.md) under `http.Agent`.
 * Architectural overview: [Architecture overview](overview.md)
 * Feature catalog: [Feature catalog](features.md)
 * Integration narrative: [Integration](integration.md)
-* Bundled dependencies (OpenSSL, nghttp2, c-ares, undici, ngtcp2, nghttp3, llhttp, libuv): [Dependencies](dependencies.md)
+* Bundled dependencies (OpenSSL, nghttp2, c-ares, undici, ngtcp2, nghttp3, llhttp, libuv):
+  [Dependencies](dependencies.md)
 * Cryptography (TLS, OpenSSL details): [Cryptography](cryptography.md)
 * Permission Model (`--allow-net`): [Permission model](permission-model.md)
 * Web Standards (fetch, FormData, Headers, Request, Response): [Web standards](web-standards.md)

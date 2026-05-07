@@ -17,7 +17,7 @@ layer below. Concurrency is built around a single-threaded event loop with optio
 The runtime is shipped as a single statically linked binary (`out/Release/node` after a release
 build). The build flow is documented in
 [`../contributing/development-overview.md`](../contributing/development-overview.md); the bundled
-dependencies are catalogued in [Dependencies](dependencies.md).
+dependencies are cataloged in [Dependencies](dependencies.md).
 
 ## The five layers
 
@@ -114,7 +114,7 @@ The `deps/` directory ships the third-party libraries that the runtime staticall
 The core set is V8 (with the embedder string `-node.17` declared in `common.gypi`, indicating 17
 Node.js patches against upstream V8), libuv (cross-platform async I/O), and OpenSSL (cryptography).
 The full list and the per-dependency build toggles (`node_use_openssl`, `node_use_amaro`,
-`node_use_sqlite`, `node_shared_*`) are catalogued in [Dependencies](dependencies.md).
+`node_use_sqlite`, `node_shared_*`) are cataloged in [Dependencies](dependencies.md).
 
 ## Architectural principles
 

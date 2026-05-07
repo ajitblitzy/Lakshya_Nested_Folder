@@ -41,11 +41,11 @@ async iterables, and the buffering algorithm, are documented in [`../api/stream.
 
 Streams compose through three idioms:
 
-| Idiom | Module | Use case |
-| --- | --- | --- |
-| `readable.pipe(writable)` | `node:stream` | Classic, error-prone — does not propagate errors automatically |
-| `pipeline(readable, ..., writable, callback)` | `node:stream` | Modern, error-propagating — recommended for new code |
-| `await pipeline(readable, ..., writable)` | `node:stream/promises` | Async/await variant of `pipeline` |
+| Idiom                                         | Module                 | Use case                                  |
+| --------------------------------------------- | ---------------------- | ----------------------------------------- |
+| `readable.pipe(writable)`                     | `node:stream`          | Classic; does not propagate errors        |
+| `pipeline(readable, ..., writable, callback)` | `node:stream`          | Modern, error-propagating; recommended    |
+| `await pipeline(readable, ..., writable)`     | `node:stream/promises` | Async/await variant of `pipeline`         |
 
 The `pipeline()` and `compose()` operators are implemented at `lib/internal/streams/pipeline.js` and
 `lib/internal/streams/compose.js`. Async iterators integrate naturally with both forms.
