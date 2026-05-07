@@ -303,7 +303,7 @@ For documentation contributors:
 
 Note: while these guides describe the development side of writing documentation (authoring,
 local preview, style enforcement), the validation commands (`make lint-md`, `make test-doc -j`)
-that gate documentation in CI are catalogued in the companion
+that gate documentation in CI are cataloged in the companion
 [Testing overview](testing-overview.md).
 
 ## Cross-references

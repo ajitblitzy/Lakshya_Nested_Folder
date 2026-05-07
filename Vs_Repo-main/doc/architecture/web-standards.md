@@ -40,7 +40,7 @@ required:
 | `AbortController`, `AbortSignal` | Web cancellation primitive | `lib/internal/abort_controller.js` |
 | `performance` | W3C User Timing | `lib/internal/perf/` |
 | `queueMicrotask` | Microtask scheduling | (V8) |
-| `structuredClone` | Structured-clone algorithm | `lib/internal/structured_clone.js` (where present) |
+| `structuredClone` | Structured-clone algorithm | `lib/internal/worker/js_transferable.js` (`nativeStructuredClone`) |
 
 The full catalog of globals (including the few CommonJS-only and ESM-only differences) is at
 [`../api/globals.md`](../api/globals.md).
