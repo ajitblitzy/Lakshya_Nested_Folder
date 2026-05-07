@@ -18,13 +18,13 @@ bindings (`src/inspector/`, `src/tracing/`) and bundled dependencies, see
 The runtime exposes five distinct diagnostic surfaces. For each surface, the table below summarizes
 its scope; full source-path details follow in a per-surface entry.
 
-| Surface             | Public module                                            | Native bindings             |
-| ------------------- | -------------------------------------------------------- | --------------------------- |
-| Inspector           | [`node:inspector`](../api/inspector.md)                  | `src/inspector/` (49 files) |
-| Performance hooks   | [`node:perf_hooks`](../api/perf_hooks.md)                | (V8 + native)               |
-| Diagnostics channel | [`node:diagnostics_channel`](../api/diagnostics_channel.md) | (none)                   |
-| Trace events        | [`node:trace_events`](../api/tracing.md)                 | `src/tracing/` (11 files)   |
-| Async hooks         | [`node:async_hooks`](../api/async_hooks.md)              | (V8 + native)               |
+| Surface             | Public module                                               | Native bindings             |
+| ------------------- | ----------------------------------------------------------- | --------------------------- |
+| Inspector           | [`node:inspector`](../api/inspector.md)                     | `src/inspector/` (49 files) |
+| Performance hooks   | [`node:perf_hooks`](../api/perf_hooks.md)                   | (V8 + native)               |
+| Diagnostics channel | [`node:diagnostics_channel`](../api/diagnostics_channel.md) | (none)                      |
+| Trace events        | [`node:trace_events`](../api/tracing.md)                    | `src/tracing/` (11 files)   |
+| Async hooks         | [`node:async_hooks`](../api/async_hooks.md)                 | (V8 + native)               |
 
 **Inspector** — `lib/inspector.js` composes V8's `v8::Inspector` with the native binding under
 `src/inspector/` (49 files). Provides step-debugging, heap and CPU profiling, and console
@@ -155,10 +155,10 @@ reports for the current process state on demand or on faults. The full surface i
 
 ## Native subdirectories
 
-| Subdirectory     | Files | Subject                                                |
-| ---------------- | ----- | ------------------------------------------------------ |
-| `src/inspector/` | 49    | Native inspector implementation (see below)            |
-| `src/tracing/`   | 11    | Trace-event categories, event writer, config plumbing  |
+| Subdirectory     | Files | Subject                                               |
+| ---------------- | ----- | ----------------------------------------------------- |
+| `src/inspector/` | 49    | Native inspector implementation (see below)           |
+| `src/tracing/`   | 11    | Trace-event categories, event writer, config plumbing |
 
 `src/inspector/` (49 files) houses the native inspector implementation, including the
 DevTools-protocol agents, transport, and the per-isolate inspector binding. `src/tracing/` (11

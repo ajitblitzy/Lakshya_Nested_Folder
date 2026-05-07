@@ -9,40 +9,39 @@ The version stamps here are `NODE_MAJOR_VERSION 26`, `NODE_MODULE_VERSION 144`,
 
 ## Integration personas
 
-```mermaid
-flowchart LR
-    subgraph Inbound[Inbound integration]
-        App[Application authors<br/>JS / TS programs]
-        Addon[Addon authors<br/>C / C++ via Node-API]
-        Embed[Embedders<br/>C++ host applications]
-    end
+<!--lint disable fenced-code-flag-->
 
-    Runtime((Node.js<br/>v26.0.0-pre<br/>node binary))
-
-    subgraph Outbound[Outbound integration]
-        GHA[GitHub Actions<br/>37 workflows]
-        Codecov[Codecov<br/>coverage gating]
-        CodeQL[CodeQL<br/>SAST]
-        Scorecard[OSSF Scorecard<br/>supply-chain hygiene]
-        HOne[HackerOne<br/>vulnerability disclosure]
-    end
-
-    App -->|node script.js<br/>import 'node:*'| Runtime
-    Addon -->|napi_* C ABI<br/>NODE_API_SUPPORTED_VERSION_MAX 10| Runtime
-    Embed -->|src/api/<br/>NODE_MODULE_VERSION 144| Runtime
-    Runtime -->|workflow runs| GHA
-    Runtime -->|coverage upload| Codecov
-    Runtime -->|SAST scans| CodeQL
-    Runtime -->|weekly scoring| Scorecard
-    Runtime -->|coordinated disclosure| HOne
-
-    classDef persona fill:#e6f0ff,stroke:#0058a3,color:#000
-    classDef ext fill:#fff5e6,stroke:#cc7a00,color:#000
-    classDef rt fill:#ffe6e6,stroke:#990000,color:#000,stroke-width:2px
-    class App,Addon,Embed persona
-    class GHA,Codecov,CodeQL,Scorecard,HOne ext
-    class Runtime rt
+```text
++--------------------------+                          +---------------------------+
+| Inbound integration      |                          | Outbound integration      |
+|                          |                          |                           |
+|  Application authors     | -- node script.js -----> |  GitHub Actions           |
+|  JS / TS programs        |    import 'node:*'       |  (37 workflows)           |
+|                          |                          |                           |
+|  Addon authors           | -- napi_* C ABI -------> |  Codecov                  |
+|  C / C++ via Node-API    |    NODE_API_SUPPORTED_   |  (coverage gating)        |
+|                          |    VERSION_MAX = 10      |                           |
+|                          |                          |  CodeQL                   |
+|  Embedders               | -- src/api/ -----------> |  (SAST)                   |
+|  C++ host applications   |    NODE_MODULE_VERSION   |                           |
+|                          |    = 144                 |  OSSF Scorecard           |
+|                          |                          |  (supply-chain hygiene)   |
+|                          |                          |                           |
+|                          |                          |  HackerOne                |
+|                          |                          |  (vulnerability           |
+|                          |                          |   disclosure)             |
++------------+-------------+                          +-------------+-------------+
+             |                                                      ^
+             v                                                      |
+       +---------------------------------------------+              |
+       |   Node.js v26.0.0-pre (the node binary)     |              |
+       |   workflow runs / coverage upload / SAST    | -------------+
+       |   scans / weekly scoring / coordinated      |
+       |   disclosure                                |
+       +---------------------------------------------+
 ```
+
+<!--lint enable fenced-code-flag-->
 
 ## Persona 1 — Application authors
 
@@ -148,16 +147,16 @@ managed runtimes, plugin hosts). The embedder API is declared in `src/node.h` an
 
 ### `src/api/` layout
 
-| File                        | Subject                                                            |
-| --------------------------- | ------------------------------------------------------------------ |
-| `src/api/environment.cc`    | Per-process and per-instance lifecycle (see note below)            |
-| `src/api/embed_helpers.cc`  | Helpers used by `embedtest` and other embedding samples            |
-| `src/api/callback.cc`       | Calling JavaScript functions from C++ with proper error handling   |
+| File                        | Subject                                                              |
+| --------------------------- | -------------------------------------------------------------------- |
+| `src/api/environment.cc`    | Per-process and per-instance lifecycle (see note below)              |
+| `src/api/embed_helpers.cc`  | Helpers used by `embedtest` and other embedding samples              |
+| `src/api/callback.cc`       | Calling JavaScript functions from C++ with proper error handling     |
 | `src/api/async_resource.cc` | The `node::AsyncResource` helper for embedders scheduling async work |
-| `src/api/encoding.cc`       | UTF-8 / Latin-1 / UCS-2 conversion helpers                         |
-| `src/api/exceptions.cc`     | Translating system errors into JavaScript `Error` objects          |
-| `src/api/hooks.cc`          | `BeforeExit` / `Exit` / `AtExit` hook registration                 |
-| `src/api/utils.cc`          | Miscellaneous embedder utilities                                   |
+| `src/api/encoding.cc`       | UTF-8 / Latin-1 / UCS-2 conversion helpers                           |
+| `src/api/exceptions.cc`     | Translating system errors into JavaScript `Error` objects            |
+| `src/api/hooks.cc`          | `BeforeExit` / `Exit` / `AtExit` hook registration                   |
+| `src/api/utils.cc`          | Miscellaneous embedder utilities                                     |
 
 The `src/api/environment.cc` file implements the core lifecycle entry points:
 `InitializeNodeWithArgs`, `CreateEnvironment`, `LoadEnvironment`, and `FreeEnvironment`.

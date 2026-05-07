@@ -44,26 +44,64 @@ libuv (bundled at `deps/uv/`) provides the single-threaded, non-blocking I/O abs
 underlies all asynchronous APIs in Node.js. The event loop runs through six phases per turn,
 checking microtasks (process.nextTick and Promise jobs) between every phase.
 
-```mermaid
-flowchart TB
-    Start((Event loop iteration begins)) --> Timers
-    Timers["1. Timers<br/><i>setTimeout, setInterval callbacks<br/>whose threshold has elapsed</i>"] --> Pending
-    Pending["2. Pending callbacks<br/><i>I/O callbacks deferred from<br/>previous iteration</i>"] --> Idle
-    Idle["3. Idle / Prepare<br/><i>Internal preparation</i>"] --> Poll
-    Poll["4. I/O Poll<br/><i>Wait for new I/O events;<br/>execute their callbacks</i>"] --> Check
-    Check["5. Check<br/><i>setImmediate callbacks</i>"] --> Close
-    Close["6. Close callbacks<br/><i>e.g., socket.on('close')</i>"] --> Refs{Active handles?}
-    Refs -- yes --> Microtasks
-    Refs -- no --> End((Loop exits;<br/>process exits))
-    Microtasks[("After every phase:<br/>process.nextTick queue<br/>then Promise microtask queue")] --> Timers
+<!--lint disable fenced-code-flag-->
 
-    classDef phase fill:#e6f0ff,stroke:#0058a3,color:#000
-    classDef micro fill:#fff5e6,stroke:#cc7a00,color:#000
-    classDef boundary fill:#ffe6e6,stroke:#990000,color:#000
-    class Timers,Pending,Idle,Poll,Check,Close phase
-    class Microtasks micro
-    class Start,End boundary
+```text
+                  ( Event loop iteration begins )
+                              |
+                              v
+           +-----------------------------------------+
+           | 1. Timers                               |
+           |    setTimeout / setInterval callbacks   |
+           |    whose threshold has elapsed          |
+           +--------------------+--------------------+
+                                |
+                                v
+           +-----------------------------------------+
+           | 2. Pending callbacks                    |
+           |    I/O callbacks deferred from prev     |
+           |    iteration                            |
+           +--------------------+--------------------+
+                                |
+                                v
+           +-----------------------------------------+
+           | 3. Idle / Prepare                       |
+           |    internal preparation                 |
+           +--------------------+--------------------+
+                                |
+                                v
+           +-----------------------------------------+
+           | 4. I/O poll                             |
+           |    wait for new I/O events; execute     |
+           |    their callbacks                      |
+           +--------------------+--------------------+
+                                |
+                                v
+           +-----------------------------------------+
+           | 5. Check                                |
+           |    setImmediate callbacks               |
+           +--------------------+--------------------+
+                                |
+                                v
+           +-----------------------------------------+
+           | 6. Close callbacks                      |
+           |    e.g., socket.on('close')             |
+           +--------------------+--------------------+
+                                |
+                                v
+                       Active handles?
+                       /              \
+                     yes               no
+                      |                 |
+                      v                 v
+       (After every phase:)    ( Loop exits;   )
+       (process.nextTick then)  ( process exits )
+       ( Promise microtasks  )
+                      |
+                      +--> back to phase 1
 ```
+
+<!--lint enable fenced-code-flag-->
 
 The event-loop lifecycle is described in detail in
 [`../api/process.md`](../api/process.md), including the `process.nextTick` and microtask interleaving
@@ -88,45 +126,60 @@ by file extension and the closest `package.json` `"type"` field:
 
 Implementation surface:
 
-| Loader              | Public module                  | Internal implementation                              |
-| ------------------- | ------------------------------ | ---------------------------------------------------- |
-| CJS                 | `lib/module.js` (`node:module`)| `lib/internal/modules/cjs/`                          |
-| ESM                 | `lib/module.js` (shared API)   | `lib/internal/modules/esm/`                          |
-| Bootstrap           | (none)                         | `lib/internal/bootstrap/`, `.../modules/run_main.js` |
-| Customization hooks | `node:module` `register()` API | `lib/internal/modules/customization_hooks.js`        |
-| Package.json reader | (none)                         | `lib/internal/modules/package_json_reader.js`        |
-| TypeScript          | (transparent)                  | `lib/internal/modules/typescript.js`                 |
-| Helpers             | (none)                         | `lib/internal/modules/helpers.js`                    |
+| Loader              | Public module                   | Internal implementation                              |
+| ------------------- | ------------------------------- | ---------------------------------------------------- |
+| CJS                 | `lib/module.js` (`node:module`) | `lib/internal/modules/cjs/`                          |
+| ESM                 | `lib/module.js` (shared API)    | `lib/internal/modules/esm/`                          |
+| Bootstrap           | (none)                          | `lib/internal/bootstrap/`, `.../modules/run_main.js` |
+| Customization hooks | `node:module` `register()` API  | `lib/internal/modules/customization_hooks.js`        |
+| Package.json reader | (none)                          | `lib/internal/modules/package_json_reader.js`        |
+| TypeScript          | (transparent)                   | `lib/internal/modules/typescript.js`                 |
+| Helpers             | (none)                          | `lib/internal/modules/helpers.js`                    |
 
 For TypeScript handling, see the [TypeScript](typescript.md) deep-dive. The Bootstrap path also
 includes `lib/internal/modules/run_main.js` (abbreviated above as `.../modules/run_main.js`).
 
 ### Module loading flow
 
-```mermaid
-flowchart TB
-    Start((User code:<br/>import / require)) --> Resolve[Resolve specifier:<br/>relative, absolute, bare]
-    Resolve --> Cache{In module cache?}
-    Cache -- yes --> Cached[Return cached module]
-    Cache -- no --> Type{File type?}
-    Type -- .cjs or commonjs .js --> CJSLoad[CJS path:<br/>lib/internal/modules/cjs/]
-    Type -- .mjs or module .js --> ESMLoad[ESM path:<br/>lib/internal/modules/esm/]
-    Type -- .ts and strip-types enabled --> TSStrip[Amaro WASM<br/>strip types]
-    TSStrip --> ESMLoad
-    CJSLoad --> Compile[Compile to V8 bytecode<br/>via Ignition]
-    ESMLoad --> Compile
-    Compile --> Execute[Execute in V8 isolate]
-    Execute --> Cached2[Cache module<br/>and return exports]
+<!--lint disable fenced-code-flag-->
 
-    classDef io fill:#ffe6e6,stroke:#990000,color:#000
-    classDef cjs fill:#e6f0ff,stroke:#0058a3,color:#000
-    classDef esm fill:#e6ffe6,stroke:#006600,color:#000
-    classDef ts fill:#fff5e6,stroke:#cc7a00,color:#000
-    class Start,Cached,Cached2 io
-    class CJSLoad cjs
-    class ESMLoad esm
-    class TSStrip ts
+```text
+        ( User code: import / require )
+                       |
+                       v
+     [ Resolve specifier: relative, absolute, bare ]
+                       |
+                       v
+                In module cache?
+                /              \
+              yes               no
+               |                 |
+               v                 v
+   [ Return cached ]      File type?
+                          /    |    \
+                         /     |     \
+              .cjs or  .mjs or   .ts and
+            commonjs   module    strip-types
+              .js       .js       enabled
+                |        |          |
+                v        v          v
+        [ CJS path:   [ ESM path:   [ Amaro WASM
+          lib/internal/  lib/internal/  strip types ]
+          modules/cjs/] modules/esm/ ]      |
+                |        ^                  |
+                |        +------------------+
+                |        |
+                v        v
+       [ Compile to V8 bytecode via Ignition ]
+                       |
+                       v
+       [ Execute in V8 isolate ]
+                       |
+                       v
+       [ Cache module and return exports ]
 ```
+
+<!--lint enable fenced-code-flag-->
 
 For the public API surface, see [`../api/module.md`](../api/module.md). For the CJS-specific
 behavior, see [`../api/modules.md`](../api/modules.md). For the ESM-specific behavior, see

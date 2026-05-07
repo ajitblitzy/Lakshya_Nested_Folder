@@ -20,23 +20,15 @@ testing activities.
 
 ## Documentation map
 
-| Document | Purpose |
-| --- | --- |
-| [Upstream Node.js README][upstream-readme] | Project README from the upstream Node.js source |
-| [Build instructions][building-md] | Build from source on Linux, macOS, Windows, AIX, and other platforms |
-| [Contribution guide][contributing-md] | Contribution overview and Developer Certificate of Origin (DCO) |
-| [Architecture index][arch-readme] | Architecture and feature documentation index (NEW) |
-| [Development overview][dev-overview] | Building, configuring, debugging, contributing, releasing workflows (NEW) |
-| [Testing overview][test-overview] | Test execution, coverage, linting, benchmarks, and CI gates (NEW) |
-| [API reference][api-ref] | Node.js API reference (68 files, one per public module) |
-
-[upstream-readme]: Vs_Repo-main/README.md
-[building-md]: Vs_Repo-main/BUILDING.md
-[contributing-md]: Vs_Repo-main/CONTRIBUTING.md
-[arch-readme]: Vs_Repo-main/doc/architecture/README.md
-[dev-overview]: Vs_Repo-main/doc/contributing/development-overview.md
-[test-overview]: Vs_Repo-main/doc/contributing/testing-overview.md
-[api-ref]: Vs_Repo-main/doc/api/
+| Document                                   | Purpose                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| [Upstream Node.js README][upstream-readme] | Project README from the upstream Node.js source                           |
+| [Build instructions][building-md]          | Build from source on Linux, macOS, Windows, AIX, and other platforms      |
+| [Contribution guide][contributing-md]      | Contribution overview and Developer Certificate of Origin (DCO)           |
+| [Architecture index][arch-readme]          | Architecture and feature documentation index (NEW)                        |
+| [Development overview][dev-overview]       | Building, configuring, debugging, contributing, releasing workflows (NEW) |
+| [Testing overview][test-overview]          | Test execution, coverage, linting, benchmarks, and CI gates (NEW)         |
+| [API reference][api-ref]                   | Node.js API reference (68 files, one per public module)                   |
 
 ## Repository layout
 
@@ -105,3 +97,11 @@ under [`Vs_Repo-main/doc/architecture/`](Vs_Repo-main/doc/architecture/).
 The Node.js source tree under `Vs_Repo-main/` is licensed under the MIT License; see
 [`Vs_Repo-main/LICENSE`](Vs_Repo-main/LICENSE) for the full license text. The new documentation added by this
 repository inherits the same license terms.
+
+[api-ref]: Vs_Repo-main/doc/api/
+[arch-readme]: Vs_Repo-main/doc/architecture/README.md
+[building-md]: Vs_Repo-main/BUILDING.md
+[contributing-md]: Vs_Repo-main/CONTRIBUTING.md
+[dev-overview]: Vs_Repo-main/doc/contributing/development-overview.md
+[test-overview]: Vs_Repo-main/doc/contributing/testing-overview.md
+[upstream-readme]: Vs_Repo-main/README.md

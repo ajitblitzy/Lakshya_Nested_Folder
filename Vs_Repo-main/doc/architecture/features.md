@@ -11,40 +11,32 @@ The version stamps for this catalog are `NODE_MAJOR_VERSION 26`, `NODE_MODULE_VE
 
 The features are grouped into three tiers reflecting their relationship to the runtime core:
 
-```mermaid
-flowchart TB
-    subgraph Tier1[Core runtime]
-        F001[F-001<br/>JavaScript runtime]
-        F005[F-005<br/>Concurrency]
-        F006[F-006<br/>Streams]
-        F007[F-007<br/>Diagnostics]
-    end
+<!--lint disable fenced-code-flag-->
 
-    subgraph Tier2[Platform capability]
-        F002[F-002<br/>Networking]
-        F003[F-003<br/>File system]
-        F004[F-004<br/>Cryptography]
-        F008[F-008<br/>Test runner]
-    end
-
-    subgraph Tier3[Modern platform]
-        F009[F-009<br/>TypeScript]
-        F010[F-010<br/>SQLite]
-        F011[F-011<br/>Single executable apps]
-        F012[F-012<br/>Permission model]
-        F013[F-013<br/>Web standards]
-    end
-
-    Tier1 --> Tier2
-    Tier2 --> Tier3
-
-    classDef tier1 fill:#e6f0ff,stroke:#0058a3,color:#000
-    classDef tier2 fill:#e6ffe6,stroke:#006600,color:#000
-    classDef tier3 fill:#fff5e6,stroke:#cc7a00,color:#000
-    class F001,F005,F006,F007 tier1
-    class F002,F003,F004,F008 tier2
-    class F009,F010,F011,F012,F013 tier3
+```text
++----------------------------------------------------------------+
+| Tier 1 — Core runtime                                          |
+|   F-001 JavaScript runtime    F-005 Concurrency                |
+|   F-006 Streams               F-007 Diagnostics                |
++--------------------------------+-------------------------------+
+                                 |
+                                 v
++----------------------------------------------------------------+
+| Tier 2 — Platform capability                                   |
+|   F-002 Networking            F-003 File system                |
+|   F-004 Cryptography          F-008 Test runner                |
++--------------------------------+-------------------------------+
+                                 |
+                                 v
++----------------------------------------------------------------+
+| Tier 3 — Modern platform                                       |
+|   F-009 TypeScript            F-010 SQLite                     |
+|   F-011 Single executable     F-012 Permission model           |
+|   F-013 Web standards                                          |
++----------------------------------------------------------------+
 ```
+
+<!--lint enable fenced-code-flag-->
 
 The arrows indicate the conceptual dependency: the platform capabilities (Tier 2) build on the core
 runtime (Tier 1), and the modern-platform features (Tier 3) build on both. The tiers are an analytical

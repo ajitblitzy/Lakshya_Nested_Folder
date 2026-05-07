@@ -38,21 +38,21 @@ largest categories are:
 
 | Category              | Approximate entry count | Purpose                                       |
 | --------------------- | ----------------------- | --------------------------------------------- |
-| `test/parallel/`      | 4,102                  | Parallel-safe functional tests run by default |
-| `test/fixtures/`      | 5,006                  | Static fixtures shared across tests           |
-| `test/sequential/`    | 121                    | Tests requiring serialized execution          |
-| `test/es-module/`     | 226                    | ECMAScript module loader tests                |
-| `test/addons/`        | 226                    | Native addon integration tests                |
-| `test/js-native-api/` | 176                    | Node-API tests written in C and JavaScript    |
-| `test/node-api/`      | 131                    | Internal Node-API tests                       |
-| `test/module-hooks/`  | 113                    | Module customization hooks tests              |
-| `test/test-runner/`   | 109                    | Built-in `node --test` runner tests           |
-| `test/async-hooks/`   | 101                    | `async_hooks` API tests                       |
-| `test/wasi/`          | 87                     | WebAssembly System Interface tests            |
-| `test/pseudo-tty/`    | 82                     | Tests that require a pseudo-TTY               |
-| `test/wpt/`           | 61                     | Web Platform Tests harness                    |
-| `test/sea/`           | 39                     | Single executable application tests           |
-| `test/cctest/`        | 36                     | C++ unit tests linked via the `cctest` binary |
+| `test/parallel/`      | 4,102                   | Parallel-safe functional tests run by default |
+| `test/fixtures/`      | 5,006                   | Static fixtures shared across tests           |
+| `test/sequential/`    | 121                     | Tests requiring serialized execution          |
+| `test/es-module/`     | 226                     | ECMAScript module loader tests                |
+| `test/addons/`        | 226                     | Native addon integration tests                |
+| `test/js-native-api/` | 176                     | Node-API tests written in C and JavaScript    |
+| `test/node-api/`      | 131                     | Internal Node-API tests                       |
+| `test/module-hooks/`  | 113                     | Module customization hooks tests              |
+| `test/test-runner/`   | 109                     | Built-in `node --test` runner tests           |
+| `test/async-hooks/`   | 101                     | `async_hooks` API tests                       |
+| `test/wasi/`          | 87                      | WebAssembly System Interface tests            |
+| `test/pseudo-tty/`    | 82                      | Tests that require a pseudo-TTY               |
+| `test/wpt/`           | 61                      | Web Platform Tests harness                    |
+| `test/sea/`           | 39                      | Single executable application tests           |
+| `test/cctest/`        | 36                      | C++ unit tests linked via the `cctest` binary |
 
 The remaining categories under `test/` (`abort/`, `benchmark/`, `client-proxy/`, `common/`,
 `doctool/`, `embedding/`, `fuzzers/`, `internet/`, `known_issues/`, `message/`, `nop/`,
@@ -150,24 +150,29 @@ test-authoring API for application code as well as a subset of internal tests un
 
 <!--lint disable fenced-code-flag-->
 
-```mermaid
-sequenceDiagram
-  autonumber
-  participant CLI as node --test
-  participant Loader as test runner
-  participant Discovery as test discovery
-  participant Execution as test execution
-  participant Coverage as coverage harness
-  participant Reporter as TAP reporter
-
-  CLI->>Loader: Start test session
-  Loader->>Discovery: Walk specified file globs
-  Discovery-->>Loader: Test plan (suites + tests)
-  Loader->>Execution: Run each test in isolation
-  Execution->>Coverage: Optional --experimental-test-coverage
-  Coverage-->>Execution: Coverage instrumentation result
-  Execution->>Reporter: Per-test status events
-  Reporter-->>CLI: TAP output (or alternate reporter)
+```text
+node --test  ->  test runner  ->  test discovery
+                       |                |
+                       |          (1) Walk specified file globs
+                       |                |
+                       |     <-- Test plan (suites + tests)
+                       |
+                       v
+                  test execution
+                       |
+                       | (2) Run each test in isolation
+                       |
+                       v
+              coverage harness  (optional)
+                       |
+                       | (3) --experimental-test-coverage
+                       |     instrumentation
+                       v
+                  TAP reporter
+                       |
+                       | (4) TAP output  (or alternate reporter)
+                       v
+                  node --test (caller)
 ```
 
 <!--lint enable fenced-code-flag-->
@@ -308,81 +313,47 @@ workflow files under `.github/workflows/`. They fall into the following categori
 
 <!--lint disable fenced-code-flag-->
 
-```mermaid
-flowchart LR
-    subgraph Triggers
-        T1[push to main]
-        T2[pull_request]
-        T3[schedule cron]
-        T4[workflow_dispatch]
-        T5[release]
-    end
-
-    subgraph TestingWorkflows[Testing]
-        W1[test-linux.yml]
-        W2[test-macos.yml]
-        W3[test-shared.yml]
-        W4[test-internet.yml]
-        W5[daily.yml]
-    end
-
-    subgraph CoverageWorkflows[Coverage]
-        C1[coverage-linux.yml]
-        C2[coverage-linux-without-intl.yml]
-        C3[coverage-windows.yml]
-    end
-
-    subgraph SecurityWorkflows[Security]
-        S1[codeql.yml]
-        S2[scorecard.yml]
-    end
-
-    subgraph LintingWorkflows[Linting]
-        L1[linters.yml]
-        L2[commit-lint.yml]
-        L3[lint-release-proposal.yml]
-        L4[license-builder.yml]
-    end
-
-    subgraph ReleaseWorkflows[Release]
-        R1[create-release-proposal.yml]
-        R2[major-release.yml]
-        R3[post-release.yml]
-        R4[build-tarball.yml]
-        R5[doc.yml]
-    end
-
-    subgraph MaintenanceWorkflows[Maintenance]
-        M1[update-v8.yml]
-        M2[update-openssl.yml]
-        M3[update-wpt.yml]
-        M4[daily-wpt-fyi.yml]
-        M5[timezone-update.yml]
-        M6[tools.yml]
-        M7[close-stale-feature-requests.yml]
-        M8[close-stale-pull-requests.yml]
-        M9[close-stalled.yml]
-        M10[find-inactive-collaborators.yml]
-        M11[find-inactive-tsc.yml]
-        M12[label-flaky-test-issue.yml]
-        M13[label-pr.yml]
-        M14[notify-on-push.yml]
-        M15[notify-on-review-wanted.yml]
-        M16[comment-labeled.yml]
-        M17[commit-queue.yml]
-        M18[auto-start-ci.yml]
-    end
-
-    T1 --> TestingWorkflows
-    T1 --> CoverageWorkflows
-    T1 --> LintingWorkflows
-    T2 --> TestingWorkflows
-    T2 --> LintingWorkflows
-    T2 --> CoverageWorkflows
-    T3 --> SecurityWorkflows
-    T3 --> MaintenanceWorkflows
-    T4 --> ReleaseWorkflows
-    T5 --> ReleaseWorkflows
+```text
++--------------------+        +-----------------------------------------+
+| Triggers           |        | Testing workflows                       |
+|  push to main      | -----> |   test-linux.yml, test-macos.yml,       |
+|  pull_request      | -----> |   test-shared.yml, test-internet.yml,   |
+|                    |        |   daily.yml                             |
+|                    |        +-----------------------------------------+
+|                    |        +-----------------------------------------+
+|                    |        | Coverage workflows                      |
+|  push to main      | -----> |   coverage-linux.yml,                   |
+|  pull_request      | -----> |   coverage-linux-without-intl.yml,      |
+|                    |        |   coverage-windows.yml                  |
+|                    |        +-----------------------------------------+
+|                    |        +-----------------------------------------+
+|                    |        | Linting workflows                       |
+|  push to main      | -----> |   linters.yml, commit-lint.yml,         |
+|  pull_request      | -----> |   lint-release-proposal.yml,            |
+|                    |        |   license-builder.yml                   |
+|                    |        +-----------------------------------------+
+|                    |        +-----------------------------------------+
+|                    |        | Security workflows                      |
+|  schedule (cron)   | -----> |   codeql.yml, scorecard.yml             |
+|                    |        +-----------------------------------------+
+|                    |        +-----------------------------------------+
+|                    |        | Maintenance workflows                   |
+|                    |        |   update-v8.yml, update-openssl.yml,    |
+|                    |        |   update-wpt.yml, daily-wpt-fyi.yml,    |
+|                    |        |   timezone-update.yml, tools.yml,       |
+|  schedule (cron)   | -----> |   close-stale-*.yml,                    |
+|                    |        |   find-inactive-*.yml,                  |
+|                    |        |   label-*.yml, notify-on-*.yml,         |
+|                    |        |   comment-labeled.yml,                  |
+|                    |        |   commit-queue.yml,                     |
+|                    |        |   auto-start-ci.yml                     |
+|                    |        +-----------------------------------------+
+|                    |        +-----------------------------------------+
+|                    |        | Release workflows                       |
+|  workflow_dispatch | -----> |   create-release-proposal.yml,          |
+|  release           | -----> |   major-release.yml, post-release.yml,  |
+|                    |        |   build-tarball.yml, doc.yml            |
++--------------------+        +-----------------------------------------+
 ```
 
 <!--lint enable fenced-code-flag-->

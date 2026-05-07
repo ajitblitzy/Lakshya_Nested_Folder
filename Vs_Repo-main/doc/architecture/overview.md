@@ -21,30 +21,42 @@ dependencies are cataloged in [Dependencies](dependencies.md).
 
 ## The five layers
 
-```mermaid
-flowchart TB
-    UserSpace["User space<br/><i>application code, third-party packages</i>"]
-    PublicAPI["Public API <code>lib/*.js</code><br/>54 modules<br/><i>node:http, node:fs, node:crypto, ...</i>"]
-    Internal["Internal modules<br/><code>lib/internal/**</code><br/><i>implementation, primordials, hooks</i>"]
-    Native["Native runtime<br/><code>src/</code><br/>453 files (433 C++)<br/><i>bindings, embedder, permissions</i>"]
-    Deps["Bundled deps <code>deps/</code><br/><i>V8, libuv, OpenSSL, nghttp2,<br/>c-ares, undici, ICU, SQLite, ...</i>"]
+<!--lint disable fenced-code-flag-->
 
-    UserSpace -->|imports node:* modules| PublicAPI
-    PublicAPI -->|delegates to| Internal
-    Internal -->|binds to| Native
-    Native -->|links statically| Deps
-
-    classDef user fill:#fff5e6,stroke:#cc7a00,color:#000
-    classDef pub fill:#e6f0ff,stroke:#0058a3,color:#000
-    classDef internal fill:#e6ffe6,stroke:#006600,color:#000
-    classDef native fill:#ffe6e6,stroke:#990000,color:#000
-    classDef deps fill:#f3f3f3,stroke:#666,color:#000
-    class UserSpace user
-    class PublicAPI pub
-    class Internal internal
-    class Native native
-    class Deps deps
+```text
++--------------------------------------------------------------+
+| Layer 1 — User space                                         |
+|   application code, third-party packages                     |
++----------------------------+---------------------------------+
+                             |  imports node:* modules
+                             v
++--------------------------------------------------------------+
+| Layer 2 — Public API: lib/*.js                               |
+|   54 modules — node:http, node:fs, node:crypto, ...          |
++----------------------------+---------------------------------+
+                             |  delegates to
+                             v
++--------------------------------------------------------------+
+| Layer 3 — Internal modules: lib/internal/**                  |
+|   implementation, primordials, hooks                         |
++----------------------------+---------------------------------+
+                             |  binds to
+                             v
++--------------------------------------------------------------+
+| Layer 4 — Native runtime: src/                               |
+|   453 files (433 C++) — bindings, embedder, permissions      |
++----------------------------+---------------------------------+
+                             |  links statically
+                             v
++--------------------------------------------------------------+
+| Layer 5 — Bundled dependencies: deps/                        |
+|   V8, libuv, OpenSSL, nghttp2, c-ares, undici, ICU,          |
+|   SQLite, Amaro, simdutf, zlib, brotli, zstd, ngtcp2,        |
+|   nghttp3, ...                                               |
++--------------------------------------------------------------+
 ```
+
+<!--lint enable fenced-code-flag-->
 
 ### Layer 1 — User space
 

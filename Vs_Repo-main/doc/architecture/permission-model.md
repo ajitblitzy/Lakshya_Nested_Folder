@@ -17,7 +17,7 @@ posture, see [`../../SECURITY.md`](../../SECURITY.md) and
 
 The Permission Model is a "seat belt" mechanism: it prevents trusted code from unintentionally
 touching resources it should not, and it provides defense-in-depth for sandboxed scenarios. It is
-**not** a sandbox against malicious code — Node.js's overall security model assumes that any code
+**not** a sandbox against malicious code — the Node.js overall security model assumes that any code
 the runtime is asked to run is trusted (per [`../../SECURITY.md`](../../SECURITY.md)). For details,
 see [`../api/permissions.md`](../api/permissions.md) under "Process-based permissions".
 
@@ -26,16 +26,16 @@ see [`../api/permissions.md`](../api/permissions.md) under "Process-based permis
 The Permission Model is implemented in the native `src/permission/` directory (17 files). Each
 resource type has its own enforcement source:
 
-| Resource | Source files |
-| --- | --- |
-| File system | `src/permission/fs_permission.cc`, `src/permission/fs_permission.h` |
-| Network | `src/permission/net_permission.cc`, `src/permission/net_permission.h` |
-| Child processes | `src/permission/child_process_permission.cc`, `src/permission/child_process_permission.h` |
-| Worker threads | `src/permission/worker_permission.cc`, `src/permission/worker_permission.h` |
-| Native addons | `src/permission/addon_permission.cc`, `src/permission/addon_permission.h` |
-| WASI | `src/permission/wasi_permission.cc`, `src/permission/wasi_permission.h` |
-| Inspector | `src/permission/inspector_permission.cc`, `src/permission/inspector_permission.h` |
-| Coordination | `src/permission/permission.cc`, `src/permission/permission.h`, `src/permission/permission_base.h` |
+| Resource        | Source files                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------- |
+| File system     | `src/permission/fs_permission.cc`, `src/permission/fs_permission.h`                               |
+| Network         | `src/permission/net_permission.cc`, `src/permission/net_permission.h`                             |
+| Child processes | `src/permission/child_process_permission.cc`, `src/permission/child_process_permission.h`         |
+| Worker threads  | `src/permission/worker_permission.cc`, `src/permission/worker_permission.h`                       |
+| Native addons   | `src/permission/addon_permission.cc`, `src/permission/addon_permission.h`                         |
+| WASI            | `src/permission/wasi_permission.cc`, `src/permission/wasi_permission.h`                           |
+| Inspector       | `src/permission/inspector_permission.cc`, `src/permission/inspector_permission.h`                 |
+| Coordination    | `src/permission/permission.cc`, `src/permission/permission.h`, `src/permission/permission_base.h` |
 
 Each binding (file system, networking, etc.) consults the corresponding permission resource before
 performing privileged operations. If the requested operation is not allowed, the binding throws
@@ -71,15 +71,15 @@ node --permission --allow-addons app.js
 
 ## Allow-flag reference
 
-| Flag | Resource | Argument | Effect |
-| --- | --- | --- | --- |
-| `--allow-fs-read` | File system reads | `*`, absolute path, prefix, or glob | Allow reading the matching paths |
-| `--allow-fs-write` | File system writes | `*`, absolute path, prefix, or glob | Allow writing the matching paths |
-| `--allow-net` | Network sockets | (no value) | Allow `node:net`, `node:dgram`, `node:dns`, TLS/HTTP/HTTP2/QUIC |
-| `--allow-child-process` | Child processes | (no value) | Allow `node:child_process` operations |
-| `--allow-worker` | Worker threads | (no value) | Allow `node:worker_threads` worker creation |
-| `--allow-wasi` | WASI runtime | (no value) | Allow `node:wasi` |
-| `--allow-addons` | Native addons | (no value) | Allow `process.dlopen()` and `require()` of `*.node` files |
+| Flag                    | Resource           | Argument                            | Effect                                                          |
+| ----------------------- | ------------------ | ----------------------------------- | --------------------------------------------------------------- |
+| `--allow-fs-read`       | File system reads  | `*`, absolute path, prefix, or glob | Allow reading the matching paths                                |
+| `--allow-fs-write`      | File system writes | `*`, absolute path, prefix, or glob | Allow writing the matching paths                                |
+| `--allow-net`           | Network sockets    | (no value)                          | Allow `node:net`, `node:dgram`, `node:dns`, TLS/HTTP/HTTP2/QUIC |
+| `--allow-child-process` | Child processes    | (no value)                          | Allow `node:child_process` operations                           |
+| `--allow-worker`        | Worker threads     | (no value)                          | Allow `node:worker_threads` worker creation                     |
+| `--allow-wasi`          | WASI runtime       | (no value)                          | Allow `node:wasi`                                               |
+| `--allow-addons`        | Native addons      | (no value)                          | Allow `process.dlopen()` and `require()` of `*.node` files      |
 
 `--allow-net` also enables the global `fetch()` (which is backed by undici) and inbound listening
 sockets for `node:http`, `node:https`, and `node:http2` servers. The full flag specification,
@@ -88,36 +88,48 @@ including escaping rules and globbing semantics, is at
 
 ## Enforcement flow
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant App as Application code
-    participant LibAPI as Public API<br/>(node:fs, node:net, ...)
-    participant InternalLib as Internal modules<br/>(lib/internal/...)
-    participant NativeAPI as Native binding<br/>(src/<subsystem>/)
-    participant PermCheck as Permission engine<br/>(src/permission/)
-    participant Resource as OS resource<br/>(fd, socket, dlopen)
+<!--lint disable fenced-code-flag-->
 
-    App->>LibAPI: e.g., fs.readFile(path)
-    LibAPI->>InternalLib: route to internal impl
-    InternalLib->>NativeAPI: invoke binding
-    NativeAPI->>PermCheck: Check(resource, requested op)
-    alt allowed
-        PermCheck-->>NativeAPI: granted
-        NativeAPI->>Resource: perform OS call
-        Resource-->>NativeAPI: result
-        NativeAPI-->>App: success
-    else denied
-        PermCheck-->>NativeAPI: denied
-        NativeAPI-->>App: throw ERR_ACCESS_DENIED
-    end
+```text
+Application code                                          OS resource
+   |                                                      (fd, socket,
+   |                                                       dlopen ...)
+   |
+   | (1) e.g., fs.readFile(path)
+   v
+Public API                       (node:fs, node:net, ...)
+   |
+   | (2) route to internal impl
+   v
+Internal modules                 (lib/internal/...)
+   |
+   | (3) invoke binding
+   v
+Native binding                   (src/<subsystem>/)
+   |
+   | (4) Check(resource, requested op)
+   v
+Permission engine                (src/permission/)
+   |
+   +-- allowed -------> (5a) perform OS call -------> OS resource
+   |                                                       |
+   |                    (6a) result <-----------------------
+   |                          |
+   |                          v
+   |                    (7a) success ---> Application code
+   |
+   +-- denied --------> (5b) throw ERR_ACCESS_DENIED ---> Application code
 ```
+
+<!--lint enable fenced-code-flag-->
 
 ## Process-permission API
 
 The runtime exposes the current permission state through `process.permission`:
 
 ```mjs
+import process from 'node:process';
+
 if (!process.permission.has('fs.read', '/etc/hosts')) {
   throw new Error('not permitted to read /etc/hosts');
 }
@@ -125,6 +137,10 @@ process.permission.has('net'); // boolean
 ```
 
 ```cjs
+'use strict';
+
+const process = require('node:process');
+
 if (!process.permission.has('fs.read', '/etc/hosts')) {
   throw new Error('not permitted to read /etc/hosts');
 }

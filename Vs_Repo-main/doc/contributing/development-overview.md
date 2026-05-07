@@ -40,19 +40,27 @@ or `vcbuild.bat` (Windows). The diagram below summarizes the path from source co
 
 <!--lint disable fenced-code-flag-->
 
-```mermaid
-flowchart LR
-    A[Source tree<br/>lib/, src/, deps/] --> B{configure<br/>./configure or<br/>configure.py}
-    B --> C[GYP project files<br/>node.gyp + common.gypi]
-    C --> D[Generator output<br/>Makefiles, MSBuild,<br/>or Ninja project]
-    D --> E[Compile<br/>.cc -> .o<br/>.js -> embedded]
-    E --> F[Link<br/>statically link V8,<br/>libuv, OpenSSL, nghttp2,<br/>c-ares, undici, ICU,<br/>SQLite, Amaro, ...]
-    F --> G[node binary<br/>out/Release/node]
-
-    classDef stage fill:#e6f0ff,stroke:#0058a3,color:#000
-    classDef artifact fill:#f3f3f3,stroke:#666,color:#000
-    class B,C,D,E,F stage
-    class A,G artifact
+```text
+[ Source tree: lib/, src/, deps/ ]
+              |
+              v
+   { configure: ./configure or configure.py }
+              |
+              v
+   [ GYP project files: node.gyp + common.gypi ]
+              |
+              v
+   [ Generator output: Makefiles, MSBuild, or Ninja project ]
+              |
+              v
+   [ Compile: .cc -> .o ; .js embedded ]
+              |
+              v
+   [ Link: statically link V8, libuv, OpenSSL, nghttp2,
+           c-ares, undici, ICU, SQLite, Amaro, ... ]
+              |
+              v
+   [ node binary: out/Release/node ]
 ```
 
 <!--lint enable fenced-code-flag-->

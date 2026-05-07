@@ -17,11 +17,11 @@ details (libuv), see [Dependencies](dependencies.md). For permission enforcement
 public face; `lib/internal/fs/` hosts the implementation, including the promise-based variant under
 `lib/internal/fs/promises.js`.
 
-| Style           | Import                                | Example operation                       |
-| --------------- | ------------------------------------- | --------------------------------------- |
-| **Callback**    | `import fs from 'node:fs'`            | `fs.readFile('a.txt', cb)` (see below)  |
-| **Synchronous** | `import fs from 'node:fs'`            | `fs.readFileSync('a.txt')` (see below)  |
-| **Promises**    | `import fs from 'node:fs/promises'`   | `await fs.readFile('a.txt')` (see below) |
+| Style           | Import                              | Example operation                        |
+| --------------- | ----------------------------------- | ---------------------------------------- |
+| **Callback**    | `import fs from 'node:fs'`          | `fs.readFile('a.txt', cb)` (see below)   |
+| **Synchronous** | `import fs from 'node:fs'`          | `fs.readFileSync('a.txt')` (see below)   |
+| **Promises**    | `import fs from 'node:fs/promises'` | `await fs.readFile('a.txt')` (see below) |
 
 Behavior of each style:
 
@@ -70,13 +70,13 @@ The complete API surface is at [`../api/fs.md`](../api/fs.md).
 All non-blocking and synchronous file-system operations route through libuv, which abstracts the
 platform-specific syscalls:
 
-| Operation             | Linux                        | macOS             | Windows                          |
-| --------------------- | ---------------------------- | ----------------- | -------------------------------- |
-| Open / read / write   | `open(2)` / `pread(2)`       | `open(2)`         | `CreateFileW` / `ReadFile`       |
+| Operation             | Linux                        | macOS             | Windows                            |
+| --------------------- | ---------------------------- | ----------------- | ---------------------------------- |
+| Open / read / write   | `open(2)` / `pread(2)`       | `open(2)`         | `CreateFileW` / `ReadFile`         |
 | Directory listing     | `getdents64(2)`              | `readdir(3)`      | `FindFirstFileW` / `FindNextFileW` |
-| Stat                  | `statx(2)` / `fstat(2)`      | `fstat(2)`        | `GetFileInformationByHandleEx`   |
-| Watcher (single file) | `inotify(7)`                 | FSEvents          | `ReadDirectoryChangesW`          |
-| Watcher (recursive)   | `inotify` (manual recursion) | FSEvents (native) | `ReadDirectoryChangesW` (native) |
+| Stat                  | `statx(2)` / `fstat(2)`      | `fstat(2)`        | `GetFileInformationByHandleEx`     |
+| Watcher (single file) | `inotify(7)`                 | FSEvents          | `ReadDirectoryChangesW`            |
+| Watcher (recursive)   | `inotify` (manual recursion) | FSEvents (native) | `ReadDirectoryChangesW` (native)   |
 
 On macOS the watcher uses the FSEvents framework
 (`<CoreServices/CoreServices.h>`); on Linux `statx(2)` is preferred when available, falling back
@@ -90,12 +90,12 @@ via the `UV_THREADPOOL_SIZE` environment variable) so that the main event loop i
 
 Two watcher APIs are exposed:
 
-| API                                     | Implementation                       | Use case                            |
-| --------------------------------------- | ------------------------------------ | ----------------------------------- |
-| `fs.watch(path, options, listener)`     | `lib/internal/fs/watchers.js`        | Watch a single file or directory    |
-| `fs.watchFile(path, options, listener)` | `lib/internal/fs/watchers.js`        | Polling-based fallback (see notes)  |
-| `fs.promises.watch(path, options)`      | `lib/internal/fs/promises.js`        | AsyncIterable for promise-style     |
-| `fs.watch(path, { recursive: true })`   | `lib/internal/fs/recursive_watch.js` | Recursive directory watching        |
+| API                                     | Implementation                       | Use case                           |
+| --------------------------------------- | ------------------------------------ | ---------------------------------- |
+| `fs.watch(path, options, listener)`     | `lib/internal/fs/watchers.js`        | Watch a single file or directory   |
+| `fs.watchFile(path, options, listener)` | `lib/internal/fs/watchers.js`        | Polling-based fallback (see notes) |
+| `fs.promises.watch(path, options)`      | `lib/internal/fs/promises.js`        | AsyncIterable for promise-style    |
+| `fs.watch(path, { recursive: true })`   | `lib/internal/fs/recursive_watch.js` | Recursive directory watching       |
 
 Notes:
 
@@ -110,19 +110,19 @@ events). The full behavior table is in [`../api/fs.md`](../api/fs.md).
 
 `lib/internal/fs/` ships several specialized helpers:
 
-| Helper | Purpose |
-| --- | --- |
-| `lib/internal/fs/cp/` | Recursive `fs.cp()` and `fs.cpSync()` implementation |
-| `lib/internal/fs/dir.js` | Async iterator for directory listing (`fs.opendir()`) |
-| `lib/internal/fs/glob.js` | `fs.glob()` and `fs.globSync()` implementation |
-| `lib/internal/fs/promises.js` | The `node:fs/promises` module |
-| `lib/internal/fs/read/` | `fs.read()` and `fs.readSync()` paths |
-| `lib/internal/fs/recursive_watch.js` | Recursive `fs.watch()` |
-| `lib/internal/fs/rimraf.js` | `fs.rm()` and `fs.rmSync()` recursive removal |
-| `lib/internal/fs/streams.js` | `fs.createReadStream()`, `fs.createWriteStream()` |
-| `lib/internal/fs/sync_write_stream.js` | Synchronous write stream backing |
-| `lib/internal/fs/utils.js` | Path normalization, mode translation, and stat translation |
-| `lib/internal/fs/watchers.js` | `fs.watch()` and `fs.watchFile()` |
+| Helper                                 | Purpose                                                    |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `lib/internal/fs/cp/`                  | Recursive `fs.cp()` and `fs.cpSync()` implementation       |
+| `lib/internal/fs/dir.js`               | Async iterator for directory listing (`fs.opendir()`)      |
+| `lib/internal/fs/glob.js`              | `fs.glob()` and `fs.globSync()` implementation             |
+| `lib/internal/fs/promises.js`          | The `node:fs/promises` module                              |
+| `lib/internal/fs/read/`                | `fs.read()` and `fs.readSync()` paths                      |
+| `lib/internal/fs/recursive_watch.js`   | Recursive `fs.watch()`                                     |
+| `lib/internal/fs/rimraf.js`            | `fs.rm()` and `fs.rmSync()` recursive removal              |
+| `lib/internal/fs/streams.js`           | `fs.createReadStream()`, `fs.createWriteStream()`          |
+| `lib/internal/fs/sync_write_stream.js` | Synchronous write stream backing                           |
+| `lib/internal/fs/utils.js`             | Path normalization, mode translation, and stat translation |
+| `lib/internal/fs/watchers.js`          | `fs.watch()` and `fs.watchFile()`                          |
 
 ## Streams
 
@@ -134,10 +134,10 @@ backpressure), see [Streams](streams.md) and [`../api/stream.md`](../api/stream.
 
 The Permission Model gates file-system access through two flags:
 
-| Flag | Effect |
-| --- | --- |
-| `--allow-fs-read` | Permits read access; accepts `*` (any), an absolute path, a directory prefix, or a glob |
-| `--allow-fs-write` | Permits write access; same accepted values |
+| Flag               | Effect                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| `--allow-fs-read`  | Permits read access; accepts `*` (any), an absolute path, a directory prefix, or a glob |
+| `--allow-fs-write` | Permits write access; same accepted values                                              |
 
 Examples:
 

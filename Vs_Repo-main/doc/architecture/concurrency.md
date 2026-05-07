@@ -12,11 +12,11 @@ For permission enforcement, see [Permission model](permission-model.md).
 
 ## Three concurrency models
 
-| Model               | Public module                                                  | Isolation                  |
-| ------------------- | -------------------------------------------------------------- | -------------------------- |
-| **Worker threads**  | [`node:worker_threads`](../api/worker_threads.md)              | Separate V8 isolate        |
-| **Child processes** | [`node:child_process`](../api/child_process.md)                | Separate OS process        |
-| **Cluster**         | [`node:cluster`](../api/cluster.md)                            | Multiple OS processes      |
+| Model               | Public module                                     | Isolation             |
+| ------------------- | ------------------------------------------------- | --------------------- |
+| **Worker threads**  | [`node:worker_threads`](../api/worker_threads.md) | Separate V8 isolate   |
+| **Child processes** | [`node:child_process`](../api/child_process.md)   | Separate OS process   |
+| **Cluster**         | [`node:cluster`](../api/cluster.md)               | Multiple OS processes |
 
 Source modules and communication primitives:
 
@@ -35,14 +35,15 @@ its own JavaScript heap, but inside the same OS process as the spawning thread. 
 [`../api/worker_threads.md`](../api/worker_threads.md). Internal implementation at
 `lib/internal/worker/`:
 
-| File | Purpose |
-| --- | --- |
-| `lib/internal/worker/clone_dom_exception.js` | Cross-isolate `DOMException` cloning helpers |
-| `lib/internal/worker/io.js` | Per-worker stdin/stdout/stderr wrappers |
-| `lib/internal/worker/js_transferable.js` | Identifies and packages JS-transferable objects |
-| `lib/internal/worker/messaging.js` | Structured-clone messaging glue |
+| File                                         | Purpose                                         |
+| -------------------------------------------- | ----------------------------------------------- |
+| `lib/internal/worker/clone_dom_exception.js` | Cross-isolate `DOMException` cloning helpers    |
+| `lib/internal/worker/io.js`                  | Per-worker stdin/stdout/stderr wrappers         |
+| `lib/internal/worker/js_transferable.js`     | Identifies and packages JS-transferable objects |
+| `lib/internal/worker/messaging.js`           | Structured-clone messaging glue                 |
 
 ```mjs
+import process from 'node:process';
 import { Worker, parentPort } from 'node:worker_threads';
 
 if (process.argv[2] === 'worker') {
@@ -54,6 +55,9 @@ if (process.argv[2] === 'worker') {
 ```
 
 ```cjs
+'use strict';
+
+const process = require('node:process');
 const { Worker, parentPort } = require('node:worker_threads');
 
 if (process.argv[2] === 'worker') {
@@ -75,12 +79,12 @@ full list is at [`../api/worker_threads.md`](../api/worker_threads.md) under "tr
 
 `node:child_process` spawns external OS processes. The four primary entry points:
 
-| API | Use case |
-| --- | --- |
-| `spawn(cmd, args, options)` | Long-running process; stream stdin/stdout/stderr |
-| `exec(cmdline, options, callback)` | Short-running shell command; buffer output |
-| `execFile(file, args, options, callback)` | Same as exec but bypasses the shell |
-| `fork(modulePath, args, options)` | Spawn a child Node.js process with an IPC channel |
+| API                                       | Use case                                          |
+| ----------------------------------------- | ------------------------------------------------- |
+| `spawn(cmd, args, options)`               | Long-running process; stream stdin/stdout/stderr  |
+| `exec(cmdline, options, callback)`        | Short-running shell command; buffer output        |
+| `execFile(file, args, options, callback)` | Same as exec but bypasses the shell               |
+| `fork(modulePath, args, options)`         | Spawn a child Node.js process with an IPC channel |
 
 `fork()` is the foundation of `node:cluster`. Public surface at
 [`../api/child_process.md`](../api/child_process.md). Internal implementation at
@@ -108,14 +112,14 @@ ls.on('exit', (code) => console.log('exit', code));
 listening sockets, distributing inbound connections among them. Internal implementation at
 `lib/internal/cluster/`:
 
-| File | Purpose |
-| --- | --- |
-| `lib/internal/cluster/primary.js` | Primary process orchestration |
-| `lib/internal/cluster/worker.js` | Per-worker process logic |
-| `lib/internal/cluster/child.js` | Child-side IPC handlers |
-| `lib/internal/cluster/round_robin_handle.js` | Round-robin scheduling on non-Windows |
-| `lib/internal/cluster/shared_handle.js` | OS-default scheduling (used on Windows) |
-| `lib/internal/cluster/utils.js` | Common helpers |
+| File                                         | Purpose                                 |
+| -------------------------------------------- | --------------------------------------- |
+| `lib/internal/cluster/primary.js`            | Primary process orchestration           |
+| `lib/internal/cluster/worker.js`             | Per-worker process logic                |
+| `lib/internal/cluster/child.js`              | Child-side IPC handlers                 |
+| `lib/internal/cluster/round_robin_handle.js` | Round-robin scheduling on non-Windows   |
+| `lib/internal/cluster/shared_handle.js`      | OS-default scheduling (used on Windows) |
+| `lib/internal/cluster/utils.js`              | Common helpers                          |
 
 The default scheduling policy is **round-robin** on non-Windows platforms (the primary process
 accepts connections and dispatches them to workers in turn). On Windows, the default is
@@ -123,6 +127,7 @@ accepts connections and dispatches them to workers in turn). On Windows, the def
 selectable at runtime through `cluster.schedulingPolicy`.
 
 ```mjs
+import process from 'node:process';
 import cluster from 'node:cluster';
 import { availableParallelism } from 'node:os';
 import { createServer } from 'node:http';
@@ -130,11 +135,14 @@ import { createServer } from 'node:http';
 if (cluster.isPrimary) {
   for (let i = 0; i < availableParallelism(); i++) cluster.fork();
 } else {
-  createServer((req, res) => res.end('worker ' + process.pid)).listen(8000);
+  createServer((req, res) => res.end(`worker ${process.pid}`)).listen(8000);
 }
 ```
 
 ```cjs
+'use strict';
+
+const process = require('node:process');
 const cluster = require('node:cluster');
 const { availableParallelism } = require('node:os');
 const { createServer } = require('node:http');
@@ -142,7 +150,7 @@ const { createServer } = require('node:http');
 if (cluster.isPrimary) {
   for (let i = 0; i < availableParallelism(); i++) cluster.fork();
 } else {
-  createServer((req, res) => res.end('worker ' + process.pid)).listen(8000);
+  createServer((req, res) => res.end(`worker ${process.pid}`)).listen(8000);
 }
 ```
 
@@ -151,10 +159,10 @@ if (cluster.isPrimary) {
 When `--permission` is enabled, both child processes and worker threads are denied by default and
 must be re-granted with explicit flags:
 
-| Flag | Effect |
-| --- | --- |
+| Flag                    | Effect                                                             |
+| ----------------------- | ------------------------------------------------------------------ |
 | `--allow-child-process` | Permits `node:child_process` (`spawn`, `exec`, `execFile`, `fork`) |
-| `--allow-worker` | Permits `new Worker(...)` |
+| `--allow-worker`        | Permits `new Worker(...)`                                          |
 
 Examples:
 
@@ -175,12 +183,12 @@ documented in [Permission model](permission-model.md).
 
 ## Choosing the right model
 
-| Workload                                              | Recommended model                            |
-| ----------------------------------------------------- | -------------------------------------------- |
-| CPU-bound JavaScript work that can be partitioned     | Worker threads (see note below)              |
+| Workload                                              | Recommended model                             |
+| ----------------------------------------------------- | --------------------------------------------- |
+| CPU-bound JavaScript work that can be partitioned     | Worker threads (see note below)               |
 | External CLI tooling, polyglot work, language interop | Child processes (`spawn`, `exec`, `execFile`) |
-| Multi-core HTTP server scale-out                      | Cluster (round-robin)                        |
-| Sandboxing untrusted user code                        | Cluster + Permission Model (see note below)  |
+| Multi-core HTTP server scale-out                      | Cluster (round-robin)                         |
+| Sandboxing untrusted user code                        | Cluster + Permission Model (see note below)   |
 
 Notes:
 

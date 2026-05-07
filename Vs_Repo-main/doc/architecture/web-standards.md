@@ -19,28 +19,28 @@ story, see [Cryptography](cryptography.md). For the runtime's networking stack i
 The runtime exposes the following Web Platform interfaces as globals — no `import` or `require`
 required:
 
-| Interface | Purpose | Backing |
-| --- | --- | --- |
-| `fetch` | HTTP/1.1 client (and HTTP/2 fallback) | undici (bundled under `deps/undici/` in the upstream Node.js tree) |
-| `Request`, `Response`, `Headers` | Fetch primitives | undici |
-| `FormData` | Multipart form data | undici |
-| `Blob`, `File` | Blob-of-bytes container | `lib/internal/blob.js`, `lib/internal/file.js` |
-| `URL`, `URLSearchParams`, `URLPattern` | WHATWG URL | ada (bundled under `deps/ada/` in the upstream Node.js tree) |
-| `TextEncoder`, `TextDecoder` | UTF-8 encoding/decoding | (V8) |
-| `TextEncoderStream`, `TextDecoderStream` | Stream encoding/decoding | `lib/internal/webstreams/encoding.js` |
-| `ReadableStream`, `WritableStream`, `TransformStream` | WHATWG Streams | `lib/internal/webstreams/` |
-| `ByteLengthQueuingStrategy` | Byte queuing strategy | `lib/internal/webstreams/queuingstrategies.js` |
-| `CountQueuingStrategy` | Count queuing strategy | `lib/internal/webstreams/queuingstrategies.js` |
-| `CompressionStream`, `DecompressionStream` | Stream-based compression | `lib/internal/webstreams/compression.js` |
-| `crypto`, `crypto.subtle`, `SubtleCrypto` | Web Cryptography API | `lib/crypto.js` + `src/crypto/` |
-| `crypto.randomUUID()` | UUIDv4 generator | `src/crypto/` |
-| `MessageChannel`, `MessagePort` | Web Messaging | `lib/internal/worker/io.js` |
-| `BroadcastChannel` | Worker-to-worker pub/sub | `lib/internal/worker/messaging.js` |
-| `EventTarget`, `Event` | DOM-style event dispatch | `lib/internal/event_target.js` |
-| `AbortController`, `AbortSignal` | Web cancellation primitive | `lib/internal/abort_controller.js` |
-| `performance` | W3C User Timing | `lib/internal/perf/` |
-| `queueMicrotask` | Microtask scheduling | (V8) |
-| `structuredClone` | Structured-clone algorithm | `lib/internal/worker/js_transferable.js` (`nativeStructuredClone`) |
+| Interface                                             | Purpose                               | Backing                                                            |
+| ----------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| `fetch`                                               | HTTP/1.1 client (and HTTP/2 fallback) | undici (bundled under `deps/undici/` in the upstream Node.js tree) |
+| `Request`, `Response`, `Headers`                      | Fetch primitives                      | undici                                                             |
+| `FormData`                                            | Multipart form data                   | undici                                                             |
+| `Blob`, `File`                                        | Blob-of-bytes container               | `lib/internal/blob.js`, `lib/internal/file.js`                     |
+| `URL`, `URLSearchParams`, `URLPattern`                | WHATWG URL                            | ada (bundled under `deps/ada/` in the upstream Node.js tree)       |
+| `TextEncoder`, `TextDecoder`                          | UTF-8 encoding/decoding               | (V8)                                                               |
+| `TextEncoderStream`, `TextDecoderStream`              | Stream encoding/decoding              | `lib/internal/webstreams/encoding.js`                              |
+| `ReadableStream`, `WritableStream`, `TransformStream` | WHATWG Streams                        | `lib/internal/webstreams/`                                         |
+| `ByteLengthQueuingStrategy`                           | Byte queuing strategy                 | `lib/internal/webstreams/queuingstrategies.js`                     |
+| `CountQueuingStrategy`                                | Count queuing strategy                | `lib/internal/webstreams/queuingstrategies.js`                     |
+| `CompressionStream`, `DecompressionStream`            | Stream-based compression              | `lib/internal/webstreams/compression.js`                           |
+| `crypto`, `crypto.subtle`, `SubtleCrypto`             | Web Cryptography API                  | `lib/crypto.js` + `src/crypto/`                                    |
+| `crypto.randomUUID()`                                 | UUIDv4 generator                      | `src/crypto/`                                                      |
+| `MessageChannel`, `MessagePort`                       | Web Messaging                         | `lib/internal/worker/io.js`                                        |
+| `BroadcastChannel`                                    | Worker-to-worker pub/sub              | `lib/internal/worker/messaging.js`                                 |
+| `EventTarget`, `Event`                                | DOM-style event dispatch              | `lib/internal/event_target.js`                                     |
+| `AbortController`, `AbortSignal`                      | Web cancellation primitive            | `lib/internal/abort_controller.js`                                 |
+| `performance`                                         | W3C User Timing                       | `lib/internal/perf/`                                               |
+| `queueMicrotask`                                      | Microtask scheduling                  | (V8)                                                               |
+| `structuredClone`                                     | Structured-clone algorithm            | `lib/internal/worker/js_transferable.js` (`nativeStructuredClone`) |
 
 The full catalog of globals (including the few CommonJS-only and ESM-only differences) is at
 [`../api/globals.md`](../api/globals.md).
@@ -76,7 +76,7 @@ For the broader networking stack and the protocol selection between HTTP/1.1, HT
 
 The WHATWG Streams Standard surface (`ReadableStream`, `WritableStream`, `TransformStream`,
 queuing strategies) lives at `lib/internal/webstreams/` and is documented in detail at
-[`../api/webstreams.md`](../api/webstreams.md). For a side-by-side comparison with Node Streams
+[`../api/webstreams.md`](../api/webstreams.md). For a side-by-side comparison with Node.js Streams
 (`Readable`, `Writable`, `Duplex`, `Transform`) and the bridging adapters between the two, see
 [Streams](streams.md).
 
@@ -124,7 +124,7 @@ omitted; the bundled copy is tracked through `tools/dep_updaters/` automation.) 
 
 ## Worker-platform alignment
 
-`MessageChannel`, `MessagePort`, `BroadcastChannel` align Node.js's `node:worker_threads` semantics
+`MessageChannel`, `MessagePort`, `BroadcastChannel` align the Node.js `node:worker_threads` semantics
 with the Web Workers specification. See [Concurrency](concurrency.md) and
 [`../api/worker_threads.md`](../api/worker_threads.md).
 

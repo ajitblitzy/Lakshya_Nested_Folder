@@ -14,54 +14,58 @@ of dependencies can also be linked dynamically against system libraries by passi
 `--shared-<lib>` to `./configure`. The default behavior is bundling; the shared-library variants are
 available for distributions that prefer system packages.
 
-```mermaid
-flowchart LR
-    Configure["./configure<br/>configure.py"] --> Toggles
-    subgraph Toggles[Build toggles in common.gypi / node.gyp]
-        T1[node_use_openssl: true]
-        T2[node_use_amaro: true]
-        T3[node_use_sqlite: true]
-        T4[node_use_v8_platform: true]
-        T5[node_use_bundled_v8: true]
-        T6[node_shared_openssl: false]
-        T7[node_shared_zlib: false]
-    end
-    Toggles --> Build[GYP -> compile -> link]
-    Build --> Binary((node binary))
-    Binary -->|statically linked| Deps
+<!--lint disable fenced-code-flag-->
 
-    subgraph Deps[Bundled dependencies under deps/]
-        V8[V8<br/>embedder string -node.17]
-        Libuv[libuv]
-        OpenSSL[OpenSSL]
-        Nghttp2[nghttp2]
-        Cares[c-ares]
-        Undici[undici]
-        ICU[ICU]
-        SQLite[SQLite]
-        Amaro[Amaro<br/>SWC WASM]
-        Simdutf[simdutf]
-        Zlib[zlib]
-        Brotli[brotli]
-        Zstd[zstd]
-        Ngtcp2[ngtcp2]
-        Nghttp3[nghttp3]
-        Llhttp[llhttp]
-        Acorn[Acorn]
-        Histogram[Histogram]
-        Postject[Postject]
-        UVwasi[uvwasi]
-    end
-
-    classDef stage fill:#e6f0ff,stroke:#0058a3,color:#000
-    classDef dep fill:#fff5e6,stroke:#cc7a00,color:#000
-    classDef bin fill:#ffe6e6,stroke:#990000,color:#000,stroke-width:2px
-    class Configure,Build,Toggles stage
-    class V8,Libuv,OpenSSL,Nghttp2,Cares,Undici,ICU,SQLite,Amaro dep
-    class Simdutf,Zlib,Brotli,Zstd,Ngtcp2,Nghttp3,Llhttp dep
-    class Acorn,Histogram,Postject,UVwasi dep
-    class Binary bin
+```text
+[ ./configure  --->  configure.py ]
+            |
+            v
++---------------------------------------------------+
+| Build toggles in common.gypi / node.gyp           |
+|   node_use_openssl       = true                   |
+|   node_use_amaro         = true                   |
+|   node_use_sqlite        = true                   |
+|   node_use_v8_platform   = true                   |
+|   node_use_bundled_v8    = true                   |
+|   node_shared_openssl    = false                  |
+|   node_shared_zlib       = false                  |
++--------------------+------------------------------+
+                     |
+                     v
+             [ GYP -> compile -> link ]
+                     |
+                     v
+             ( node binary )
+                     |
+                     | statically linked
+                     v
++---------------------------------------------------+
+| Bundled dependencies under deps/                  |
+|                                                   |
+|   V8 (embedder string -node.17)                   |
+|   libuv                                           |
+|   OpenSSL                                         |
+|   nghttp2                                         |
+|   c-ares                                          |
+|   undici                                          |
+|   ICU                                             |
+|   SQLite                                          |
+|   Amaro (SWC WASM)                                |
+|   simdutf                                         |
+|   zlib                                            |
+|   brotli                                          |
+|   zstd                                            |
+|   ngtcp2                                          |
+|   nghttp3                                         |
+|   llhttp                                          |
+|   Acorn                                           |
+|   Histogram                                       |
+|   Postject                                        |
+|   uvwasi                                          |
++---------------------------------------------------+
 ```
+
+<!--lint enable fenced-code-flag-->
 
 ## Dependency matrix
 
@@ -328,21 +332,21 @@ the automation is the `tools/dep_updaters/update-v8-patch.sh` script (invoked by
 
 The most relevant build flags from `common.gypi` and `node.gyp`:
 
-| Flag                       | Default  | Effect                                                              |
-| -------------------------- | -------- | ------------------------------------------------------------------- |
-| `node_use_openssl`         | `true`   | Enable OpenSSL bindings (see note below)                            |
-| `node_use_amaro`           | `true`   | Enable Amaro TypeScript type stripping for `--experimental-strip-types` |
-| `node_use_sqlite`          | `true`   | Enable bundled SQLite for `node:sqlite`                             |
-| `node_use_v8_platform`     | `true`   | Use V8's bundled libplatform implementation                         |
-| `node_use_bundled_v8`      | `true`   | Link the bundled V8 (versus a system V8)                            |
-| `node_use_node_snapshot`   | varies   | Embed a code snapshot to speed up startup (`--node-snapshot`)       |
-| `node_use_node_code_cache` | varies   | Embed compiled core-module bytecode                                 |
-| `node_shared`              | `false`  | Build the runtime as a shared library                               |
-| `node_shared_openssl`      | `false`  | Link a system OpenSSL instead of the bundled copy                   |
-| `node_shared_libuv`        | `false`  | Link a system libuv                                                 |
-| `node_shared_zlib`         | `false`  | Link a system zlib                                                  |
-| `node_shared_uvwasi`       | `false`  | Link a system uvwasi                                                |
-| `node_module_version`      | `''`     | Override the module ABI version at build time (see note below)      |
+| Flag                       | Default | Effect                                                                  |
+| -------------------------- | ------- | ----------------------------------------------------------------------- |
+| `node_use_openssl`         | `true`  | Enable OpenSSL bindings (see note below)                                |
+| `node_use_amaro`           | `true`  | Enable Amaro TypeScript type stripping for `--experimental-strip-types` |
+| `node_use_sqlite`          | `true`  | Enable bundled SQLite for `node:sqlite`                                 |
+| `node_use_v8_platform`     | `true`  | Use V8's bundled libplatform implementation                             |
+| `node_use_bundled_v8`      | `true`  | Link the bundled V8 (versus a system V8)                                |
+| `node_use_node_snapshot`   | varies  | Embed a code snapshot to speed up startup (`--node-snapshot`)           |
+| `node_use_node_code_cache` | varies  | Embed compiled core-module bytecode                                     |
+| `node_shared`              | `false` | Build the runtime as a shared library                                   |
+| `node_shared_openssl`      | `false` | Link a system OpenSSL instead of the bundled copy                       |
+| `node_shared_libuv`        | `false` | Link a system libuv                                                     |
+| `node_shared_zlib`         | `false` | Link a system zlib                                                      |
+| `node_shared_uvwasi`       | `false` | Link a system uvwasi                                                    |
+| `node_module_version`      | `''`    | Override the module ABI version at build time (see note below)          |
 
 `node_use_openssl: true` is required for `node:crypto`, `node:tls`, `node:https`, `node:http2`,
 and `node:webcrypto`. When `node_module_version` is left empty (the default), the build picks up

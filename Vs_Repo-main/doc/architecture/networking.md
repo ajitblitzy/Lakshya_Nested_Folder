@@ -13,19 +13,19 @@ details (libuv, OpenSSL, nghttp2, c-ares, undici, ngtcp2, nghttp3, llhttp), see
 
 ## Protocol matrix
 
-| Protocol                 | Public module                        | Backing library              |
-| ------------------------ | ------------------------------------ | ---------------------------- |
-| TCP                      | [`node:net`](../api/net.md)          | libuv (`deps/uv/`)           |
-| UDP                      | [`node:dgram`](../api/dgram.md)      | libuv                        |
-| DNS                      | [`node:dns`](../api/dns.md)          | c-ares (`deps/cares/`), libuv |
-| TLS                      | [`node:tls`](../api/tls.md)          | OpenSSL (`deps/openssl/`)    |
-| HTTP/1.1 (server)        | [`node:http`](../api/http.md)        | llhttp (`deps/llhttp/`)      |
-| HTTP/1.1 (client)        | [`node:http`](../api/http.md)        | llhttp                       |
-| HTTPS                    | [`node:https`](../api/https.md)      | OpenSSL + llhttp             |
-| HTTP/2                   | [`node:http2`](../api/http2.md)      | nghttp2 (`deps/nghttp2/`)    |
-| QUIC                     | [`node:quic`](../api/quic.md)        | ngtcp2 + nghttp3             |
-| HTTP/3                   | (via `node:quic`)                    | ngtcp2 + nghttp3             |
-| Fetch / global `fetch()` | (global; delegates to undici)        | undici (`deps/undici/`)      |
+| Protocol                 | Public module                   | Backing library               |
+| ------------------------ | ------------------------------- | ----------------------------- |
+| TCP                      | [`node:net`](../api/net.md)     | libuv (`deps/uv/`)            |
+| UDP                      | [`node:dgram`](../api/dgram.md) | libuv                         |
+| DNS                      | [`node:dns`](../api/dns.md)     | c-ares (`deps/cares/`), libuv |
+| TLS                      | [`node:tls`](../api/tls.md)     | OpenSSL (`deps/openssl/`)     |
+| HTTP/1.1 (server)        | [`node:http`](../api/http.md)   | llhttp (`deps/llhttp/`)       |
+| HTTP/1.1 (client)        | [`node:http`](../api/http.md)   | llhttp                        |
+| HTTPS                    | [`node:https`](../api/https.md) | OpenSSL + llhttp              |
+| HTTP/2                   | [`node:http2`](../api/http2.md) | nghttp2 (`deps/nghttp2/`)     |
+| QUIC                     | [`node:quic`](../api/quic.md)   | ngtcp2 + nghttp3              |
+| HTTP/3                   | (via `node:quic`)               | ngtcp2 + nghttp3              |
+| Fetch / global `fetch()` | (global; delegates to undici)   | undici (`deps/undici/`)       |
 
 The internal implementation surface for each protocol:
 
@@ -44,33 +44,39 @@ The internal implementation surface for each protocol:
 
 ## Inbound request flow
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Client
-    participant TCP as TCP layer<br/>(libuv)
-    participant TLS as TLS layer<br/>(OpenSSL)<br/>OPTIONAL
-    participant Proto as Protocol selector<br/>(HTTP/1.1 or HTTP/2 or QUIC)
-    participant H1 as HTTP/1.1<br/>(llhttp)
-    participant H2 as HTTP/2<br/>(nghttp2)
-    participant H3 as HTTP/3<br/>(ngtcp2 + nghttp3)
-    participant Handler as User handler<br/>(request listener)
+<!--lint disable fenced-code-flag-->
 
-    Client->>TCP: TCP SYN (or QUIC Initial over UDP)
-    TCP->>TLS: Accept, optional TLS handshake
-    TLS->>Proto: ALPN selection (h2, http/1.1, h3)
-    alt Protocol is HTTP/1.1
-        Proto->>H1: Forward bytes
-        H1->>Handler: emit 'request'
-    else Protocol is HTTP/2
-        Proto->>H2: Forward frames
-        H2->>Handler: emit 'stream'
-    else Protocol is HTTP/3 (QUIC)
-        Proto->>H3: Forward QUIC frames
-        H3->>Handler: emit 'session' / 'stream'
-    end
-    Handler-->>Client: Write response
+```text
+Client                                                             Handler
+  |                                                                  |
+  | (1) TCP SYN  (or QUIC Initial over UDP)                          |
+  |--------------------> TCP layer (libuv)                            |
+  |                              |                                    |
+  |                              | (2) Accept; optional TLS handshake |
+  |                              v                                    |
+  |                       TLS layer (OpenSSL)  -- optional --         |
+  |                              |                                    |
+  |                              | (3) ALPN selection                 |
+  |                              v                                    |
+  |                     Protocol selector                             |
+  |                     /        |        \                           |
+  |              http/1.1      h2          h3                         |
+  |                /           |             \                        |
+  |               v            v              v                       |
+  |           HTTP/1.1      HTTP/2          HTTP/3                    |
+  |           (llhttp)      (nghttp2)       (ngtcp2 + nghttp3)        |
+  |              |             |               |                      |
+  |              | emit         | emit          | emit                |
+  |              | 'request'    | 'stream'      | 'session'/'stream'  |
+  |              +-------------+----------------+                     |
+  |                            |                                      |
+  |                            v                                      |
+  |                     User handler ---------------------------------+
+  |                            |                                      |
+  | <----------------- Write response (4)                             |
 ```
+
+<!--lint enable fenced-code-flag-->
 
 ## Permission Model interaction
 
