@@ -6,7 +6,8 @@
 This page deep-dives into Node.js v26.0.0-pre's Web Platform alignment. The runtime ships a growing
 set of WHATWG and W3C web-standard APIs as global constructors, allowing isomorphic JavaScript that
 runs unmodified in browsers and on Node.js. The version stamps are `NODE_MAJOR_VERSION 26`,
-`NODE_MODULE_VERSION 144`.
+`NODE_MODULE_VERSION 144`, `NODE_API_SUPPORTED_VERSION_MAX 10`, `NODE_VERSION_IS_RELEASE 0`, as
+recorded in `src/node_version.h`.
 
 For an overview of the runtime layers, see [Architecture overview](overview.md). For Web Streams in
 the broader streams story, see [Streams](streams.md). For Web Crypto in the broader cryptography
@@ -20,11 +21,11 @@ required:
 
 | Interface | Purpose | Backing |
 | --- | --- | --- |
-| `fetch` | HTTP/1.1 client (and HTTP/2 fallback) | undici (`deps/undici/`) |
+| `fetch` | HTTP/1.1 client (and HTTP/2 fallback) | undici (bundled under `deps/undici/` in the upstream Node.js tree) |
 | `Request`, `Response`, `Headers` | Fetch primitives | undici |
 | `FormData` | Multipart form data | undici |
 | `Blob`, `File` | Blob-of-bytes container | `lib/internal/blob.js`, `lib/internal/file.js` |
-| `URL`, `URLSearchParams`, `URLPattern` | WHATWG URL | ada (`deps/ada/`) |
+| `URL`, `URLSearchParams`, `URLPattern` | WHATWG URL | ada (bundled under `deps/ada/` in the upstream Node.js tree) |
 | `TextEncoder`, `TextDecoder` | UTF-8 encoding/decoding | (V8) |
 | `TextEncoderStream`, `TextDecoderStream` | Stream encoding/decoding | `lib/internal/webstreams/encoding.js` |
 | `ReadableStream`, `WritableStream`, `TransformStream` | WHATWG Streams | `lib/internal/webstreams/` |
@@ -47,11 +48,13 @@ The full catalog of globals (including the few CommonJS-only and ESM-only differ
 ## fetch and undici
 
 The global `fetch()` function and the `Request`, `Response`, `Headers`, `FormData` classes are
-backed by **undici**, a modern HTTP/1.1 client maintained by the Node.js project and bundled at
-`deps/undici/`. The bindings live under `lib/internal/`. The undici project also ships a richer
-public API (e.g., `Pool`, `Agent`, `MockAgent`, `Dispatcher`, `Client`) that user code can opt into
-by `npm install undici`; the bundled copy is the global-fetch surface only. For details, see the
-upstream undici project linked from [`../api/globals.md`](../api/globals.md).
+backed by **undici**, a modern HTTP/1.1 client maintained by the Node.js project and bundled in the
+upstream Node.js tree under `deps/undici/`. (In this repository's source archive the `deps/` tree is
+omitted; the bundled copy is identified through `src/undici_version.h` and the update automation in
+`tools/dep_updaters/update-undici.sh`.) The bindings live under `lib/internal/`. The undici project
+also ships a richer public API (e.g., `Pool`, `Agent`, `MockAgent`, `Dispatcher`, `Client`) that user
+code can opt into by `npm install undici`; the bundled copy is the global-fetch surface only. For
+details, see the upstream undici project linked from [`../api/globals.md`](../api/globals.md).
 
 ```mjs
 // Global fetch, no import required
@@ -113,9 +116,11 @@ Streams worlds (e.g., `blob.stream()` returns a `ReadableStream`). For details, 
 
 ## URL, URLSearchParams, URLPattern
 
-The runtime ships a fully-WHATWG-compliant URL parser backed by the **ada** library bundled at
-`deps/ada/`. The full surface (including encoding, percent-encoding, IDNA / Punycode handling) is
-at [`../api/url.md`](../api/url.md).
+The runtime ships a fully-WHATWG-compliant URL parser backed by the **ada** library bundled in the
+upstream Node.js tree under `deps/ada/`. (In this repository's source archive the `deps/` tree is
+omitted; the bundled copy is tracked through `tools/dep_updaters/` automation.) The full surface
+(including encoding, percent-encoding, IDNA / Punycode handling) is at
+[`../api/url.md`](../api/url.md).
 
 ## Worker-platform alignment
 

@@ -3,7 +3,8 @@
 <!--introduced_in=v0.10.0-->
 
 * [Architecture overview](../architecture/README.md)
-* Contributing: [development overview](../contributing/development-overview.md), [testing overview](../contributing/testing-overview.md)
+* Contributing: [development overview](../contributing/development-overview.md),
+  [testing overview](../contributing/testing-overview.md)
 * [About this documentation](documentation.md)
 * [Usage and example](synopsis.md)
 

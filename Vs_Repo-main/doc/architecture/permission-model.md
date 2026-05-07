@@ -5,7 +5,8 @@
 This page deep-dives into the Node.js v26.0.0-pre Permission Model, a default-deny enforcement layer
 that gates file-system, network, child-process, worker, addon, and WASI access when the runtime is
 launched with `--permission`. The version stamps are `NODE_MAJOR_VERSION 26`,
-`NODE_MODULE_VERSION 144`.
+`NODE_MODULE_VERSION 144`, `NODE_API_SUPPORTED_VERSION_MAX 10`, `NODE_VERSION_IS_RELEASE 0`, as
+recorded in `src/node_version.h`.
 
 For an overview of the runtime layers, see [Architecture overview](overview.md). For the API
 reference, see [`../api/permissions.md`](../api/permissions.md). For the project's broader security

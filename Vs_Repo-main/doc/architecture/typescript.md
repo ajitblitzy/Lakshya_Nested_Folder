@@ -1,11 +1,17 @@
 # TypeScript
 
-> Feature: F-009 — TypeScript (`--experimental-strip-types`, `--experimental-transform-types`)
+> Feature: F-009 — TypeScript type stripping via Amaro
+> (`--experimental-strip-types` is the default in v26; `--experimental-transform-types` was removed
+> in v26)
 
 This page deep-dives into Node.js v26.0.0-pre's built-in TypeScript support. The runtime ships an
 in-process type stripper based on the SWC compiler compiled to WASM, packaged as the
-[Amaro](https://github.com/nodejs/amaro) project and bundled at `deps/amaro/`. The version stamps
-are `NODE_MAJOR_VERSION 26`, `NODE_MODULE_VERSION 144`.
+[Amaro](https://github.com/nodejs/amaro) project and bundled in the upstream Node.js tree under
+`deps/amaro/`. (In this repository's source archive the `deps/` tree is omitted; the bundled copy is
+identified through `src/amaro_version.h` and the update automation in
+`tools/dep_updaters/update-amaro.sh`.) The version stamps are `NODE_MAJOR_VERSION 26`,
+`NODE_MODULE_VERSION 144`, `NODE_API_SUPPORTED_VERSION_MAX 10`, `NODE_VERSION_IS_RELEASE 0`, as
+recorded in `src/node_version.h`.
 
 For an overview of the runtime layers, see [Architecture overview](overview.md). For the module
 loader that triggers TypeScript handling, see [JavaScript runtime](runtime.md). For dependency
@@ -17,14 +23,22 @@ The runtime's built-in TypeScript support is intentionally lightweight: it **era
 time so that TypeScript files can be executed without an explicit compile step. It does **not**
 perform full TypeScript compilation, type checking, or down-leveling of newer ECMAScript syntax.
 
-| Capability                                          | Built-in support                   | Use external tooling for                          |
-| --------------------------------------------------- | ---------------------------------- | ------------------------------------------------- |
-| Type erasure (TS → JS by removing type annotations) | ✓ via Amaro                        | n/a                                               |
-| Type checking                                       | ✗                                  | `tsc --noEmit`, `tsd`, `vitest --typecheck`, etc. |
-| Down-leveling (e.g., ES2024 → ES2017)               | ✗                                  | `tsc`, `swc`, `esbuild`, `babel`                  |
-| `enum`, `namespace`, parameter properties           | ✗ (transform-types removed in v26) | tsc or swc/esbuild ahead of time                  |
-| Decorators                                          | partial (legacy decorators)        | tsc or swc/esbuild ahead of time                  |
-| Path mapping (`tsconfig.json` `paths`)              | ✗                                  | resolver hooks via `node:module` `register()`     |
+The capabilities of the built-in TypeScript pipeline (versus the external tooling user code must
+fall back to) are summarized below:
+
+* **Type erasure (TS → JS by removing type annotations).** Built-in via Amaro. No external tooling
+  required.
+* **Type checking.** Not built in. Use `tsc --noEmit`, `tsd`, `vitest --typecheck`, or an editor
+  with a TypeScript language service.
+* **Down-leveling** (for example, ES2024 → ES2017). Not built in. Use `tsc`, `swc`, `esbuild`, or
+  `babel` ahead of time.
+* **`enum`, `namespace`, and parameter properties.** Not built in. (The
+  `--experimental-transform-types` mode that previously supported these forms was removed in v26;
+  see the section below.) Use `tsc` or an `swc`/`esbuild` build step ahead of time.
+* **Decorators.** Partial — legacy decorators are accepted by Amaro for type-stripping purposes.
+  For full decorator semantics, use `tsc` or an `swc`/`esbuild` build step ahead of time.
+* **Path mapping (`tsconfig.json` `paths`).** Not built in. Install resolver hooks via the
+  `node:module` `register()` API to translate specifier paths.
 
 ## How it works
 
@@ -34,8 +48,10 @@ strip type annotations from the source, returning a stripped JavaScript string p
 The stripped JavaScript is then handed to V8 for compilation as if it were a `.js`, `.mjs`, or
 `.cjs` file (per the file's `package.json` `"type"` field).
 
-The bundled Amaro lives at `deps/amaro/` and is enabled by the build toggle
-`node_use_amaro: true` declared in `node.gyp`. Dependency details and update automation are in
+The bundled Amaro lives at `deps/amaro/` in the upstream Node.js tree and is enabled by the build
+toggle `node_use_amaro: true` declared in `node.gyp`. (In this repository's source archive the
+`deps/` tree is omitted; the integration is identifiable through `src/amaro_version.h` and
+`tools/dep_updaters/update-amaro.sh`.) Dependency details and update automation are in
 [Dependencies](dependencies.md).
 
 ## Default mode and `--experimental-strip-types`

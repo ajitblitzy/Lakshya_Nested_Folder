@@ -6,7 +6,8 @@
 This page deep-dives into the diagnostics surface of Node.js v26.0.0-pre. It covers the Chrome
 DevTools Inspector protocol, perf hooks (high-resolution timing), the diagnostics channel pub/sub
 event bus, trace events, and async hooks. The version stamps are `NODE_MAJOR_VERSION 26`,
-`NODE_MODULE_VERSION 144`.
+`NODE_MODULE_VERSION 144`, `NODE_API_SUPPORTED_VERSION_MAX 10`, `NODE_VERSION_IS_RELEASE 0`, as
+recorded in `src/node_version.h`.
 
 For an overview of the runtime layers, see [Architecture overview](overview.md). For native
 bindings (`src/inspector/`, `src/tracing/`) and bundled dependencies, see
@@ -14,13 +15,35 @@ bindings (`src/inspector/`, `src/tracing/`) and bundled dependencies, see
 
 ## Five diagnostic surfaces
 
-| Surface             | Public module                                                                              | Internal                                                       | Native                      | Purpose                                                                                  |
-| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
-| Inspector           | [`node:inspector`](../api/inspector.md) (`lib/inspector.js`)                               | (composes V8 inspector + native)                               | `src/inspector/` (49 files) | Step-debugging, heap and CPU profiling, console redirection via Chrome DevTools Protocol |
-| Performance hooks   | [`node:perf_hooks`](../api/perf_hooks.md) (`lib/perf_hooks.js`)                            | `lib/internal/perf/`                                           | (V8 + native)               | High-resolution timing, marks and measures, observer pattern, event-loop utilization     |
-| Diagnostics channel | [`node:diagnostics_channel`](../api/diagnostics_channel.md) (`lib/diagnostics_channel.js`) | (in-line)                                                      | (none)                      | Pub/sub event bus for cross-cutting events emitted by core and user code                 |
-| Trace events        | [`node:trace_events`](../api/tracing.md) (`lib/trace_events.js`)                           | `lib/internal/trace_events_async_hooks.js`                     | `src/tracing/` (11 files)   | Chrome trace event format; integrates with `chrome://tracing` and Perfetto               |
-| Async hooks         | [`node:async_hooks`](../api/async_hooks.md) (`lib/async_hooks.js`)                         | `lib/internal/async_hooks.js`, `lib/internal/promise_hooks.js` | (V8 + native)               | Lifecycle hooks for async resources (init, before, after, destroy, promiseResolve)       |
+The runtime exposes five distinct diagnostic surfaces. For each surface, the table below summarizes
+its scope; full source-path details follow in a per-surface entry.
+
+| Surface             | Public module                                            | Native bindings             |
+| ------------------- | -------------------------------------------------------- | --------------------------- |
+| Inspector           | [`node:inspector`](../api/inspector.md)                  | `src/inspector/` (49 files) |
+| Performance hooks   | [`node:perf_hooks`](../api/perf_hooks.md)                | (V8 + native)               |
+| Diagnostics channel | [`node:diagnostics_channel`](../api/diagnostics_channel.md) | (none)                   |
+| Trace events        | [`node:trace_events`](../api/tracing.md)                 | `src/tracing/` (11 files)   |
+| Async hooks         | [`node:async_hooks`](../api/async_hooks.md)              | (V8 + native)               |
+
+**Inspector** — `lib/inspector.js` composes V8's `v8::Inspector` with the native binding under
+`src/inspector/` (49 files). Provides step-debugging, heap and CPU profiling, and console
+redirection via the Chrome DevTools Protocol.
+
+**Performance hooks** — `lib/perf_hooks.js` plus `lib/internal/perf/`, with V8 and native support
+for high-resolution clocks. Exposes marks and measures, the observer pattern, and event-loop
+utilization metrics.
+
+**Diagnostics channel** — `lib/diagnostics_channel.js` is a pure-JavaScript pub/sub event bus for
+cross-cutting events emitted by core modules and user code.
+
+**Trace events** — `lib/trace_events.js` plus `lib/internal/trace_events_async_hooks.js`, backed by
+the native binding under `src/tracing/` (11 files). Writes Chrome trace event format compatible
+with `chrome://tracing` and Perfetto.
+
+**Async hooks** — `lib/async_hooks.js` plus `lib/internal/async_hooks.js` and
+`lib/internal/promise_hooks.js`, with V8 and native support. Exposes lifecycle hooks for async
+resources (`init`, `before`, `after`, `destroy`, `promiseResolve`).
 
 ## Inspector protocol
 
@@ -132,10 +155,15 @@ reports for the current process state on demand or on faults. The full surface i
 
 ## Native subdirectories
 
-| Subdirectory     | Files | Subject                                                                                                               |
-| ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------- |
-| `src/inspector/` | 49    | Native inspector implementation, including DevTools-protocol agents, transport, and the per-isolate inspector binding |
-| `src/tracing/`   | 11    | Trace-event categories, event writer, and config plumbing                                                             |
+| Subdirectory     | Files | Subject                                                |
+| ---------------- | ----- | ------------------------------------------------------ |
+| `src/inspector/` | 49    | Native inspector implementation (see below)            |
+| `src/tracing/`   | 11    | Trace-event categories, event writer, config plumbing  |
+
+`src/inspector/` (49 files) houses the native inspector implementation, including the
+DevTools-protocol agents, transport, and the per-isolate inspector binding. `src/tracing/` (11
+files) houses the trace-event categories, the event writer, and the configuration plumbing that
+feeds JSON trace output to disk or stdio.
 
 ## Cross-references
 
@@ -154,6 +182,8 @@ reports for the current process state on demand or on faults. The full surface i
   * [`../api/async_context.md`](../api/async_context.md)
   * [`../api/report.md`](../api/report.md)
   * [`../api/debugger.md`](../api/debugger.md)
-* Diagnostic tooling support tiers: [`../contributing/diagnostic-tooling-support-tiers.md`](../contributing/diagnostic-tooling-support-tiers.md)
-* Native memory leak investigation: [`../contributing/investigating-native-memory-leaks.md`](../contributing/investigating-native-memory-leaks.md)
+* Diagnostic tooling support tiers:
+  [`../contributing/diagnostic-tooling-support-tiers.md`](../contributing/diagnostic-tooling-support-tiers.md)
+* Native memory leak investigation:
+  [`../contributing/investigating-native-memory-leaks.md`](../contributing/investigating-native-memory-leaks.md)
 * Post-mortem support: [`../contributing/node-postmortem-support.md`](../contributing/node-postmortem-support.md)

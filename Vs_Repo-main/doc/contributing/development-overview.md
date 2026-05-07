@@ -218,7 +218,7 @@ dependency has a dedicated maintainer guide in the [`maintaining/`](maintaining/
 * [Single executable applications](maintaining/maintaining-single-executable-application-support.md) — SEA build mode
 * [The build files](maintaining/maintaining-the-build-files.md) — GYP and Makefile maintenance
 * [Types for Node.js](maintaining/maintaining-types-for-nodejs.md) — TypeScript type definitions
-* [Maintaining merve](maintaining/maintaining-merve.md) — merve
+* [Maintaining merve](maintaining/maintaining-merve.md) — merve (named-export detection for CommonJS in ESM)
 * [Maintaining dependencies](maintaining/maintaining-dependencies.md) — Cross-cutting dependency policy
 
 Routine version bumps are automated by the scripts under `tools/dep_updaters/`. The CI workflows

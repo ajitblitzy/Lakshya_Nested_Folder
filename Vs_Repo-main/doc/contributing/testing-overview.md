@@ -36,8 +36,8 @@ The Node.js test suite lives under `test/` and consists of approximately 11,060 
 files, fixtures, and supporting assets) distributed across 37 top-level category directories. The
 largest categories are:
 
-| Category              | Approximate file count | Purpose                                       |
-| --------------------- | ---------------------- | --------------------------------------------- |
+| Category              | Approximate entry count | Purpose                                       |
+| --------------------- | ----------------------- | --------------------------------------------- |
 | `test/parallel/`      | 4,102                  | Parallel-safe functional tests run by default |
 | `test/fixtures/`      | 5,006                  | Static fixtures shared across tests           |
 | `test/sequential/`    | 121                    | Tests requiring serialized execution          |

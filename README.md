@@ -51,9 +51,9 @@ testing activities.
     ├── LICENSE              — MIT license
     ├── lib/                 — public JavaScript API (54 modules)
     ├── src/                 — native C++ runtime (453 files)
-    ├── test/                — test suite (11,060 files)
+    ├── test/                — test suite (11,060 entries; ~10,317 files)
     ├── tools/               — build/lint/release tooling
-    ├── benchmark/           — performance benchmarks (591 files)
+    ├── benchmark/           — performance benchmarks (591 entries; ~525 files)
     ├── deps/                — bundled dependencies (V8, libuv, OpenSSL, etc.)
     └── doc/                 — documentation tree
         ├── api/             — API reference (68 files)
@@ -78,8 +78,9 @@ The Node.js runtime under `Vs_Repo-main/` exposes 13 documented features (F-001 
 * **F-006 Streams** — Readable, Writable, Transform, Duplex, plus the Web Streams API.
 * **F-007 Diagnostics** — Inspector protocol, perf hooks, diagnostics channel, trace events, async hooks.
 * **F-008 Built-in test runner** — `node --test` with TAP output and coverage reporting.
-* **F-009 TypeScript support** — Amaro (SWC WASM) type stripping, with `--experimental-strip-types` and
-  `--experimental-transform-types` modes.
+* **F-009 TypeScript support** — Amaro (SWC WASM) in-process type stripping. In v26, type stripping is the default
+  behavior for `.ts`, `.mts`, and `.cts` files (the legacy `--experimental-strip-types` flag is now a no-op); the
+  earlier `--experimental-transform-types` flag has been removed in v26.
 * **F-010 SQLite** — bundled SQLite database access via `node:sqlite`.
 * **F-011 Single executable applications** — `node --experimental-sea-config` to bundle a runtime + script.
 * **F-012 Permission model** — `--permission` flag with default-deny resource access (`--allow-fs-read`,
